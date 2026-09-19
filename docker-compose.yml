@@ -1,0 +1,31 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    env_file:
+      - ./backend/.env
+    environment:
+      # Overrides .env when running via compose, so the stack works out of
+      # the box against the local `mongo` service. Point MONGODB_URL at
+      # Atlas in ./backend/.env instead if you want compose to use Atlas.
+      MONGODB_URL: mongodb://mongo:27017
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
