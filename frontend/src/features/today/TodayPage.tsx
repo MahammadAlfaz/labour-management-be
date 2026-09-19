@@ -1,36 +1,45 @@
-import { useQuery } from '@tanstack/react-query'
-import { apiFetch } from '../../lib/apiClient'
+import { useState } from 'react'
+import EmptyState from '../../components/EmptyState'
+import { useSites } from '../sites/useSites'
+import SiteCrewBoard from './SiteCrewBoard'
+import SiteGrid from './SiteGrid'
 
-interface HealthResponse {
-  status: 'ok' | 'degraded'
-  database: boolean
+function todayIso() {
+  return new Date().toISOString().slice(0, 10)
 }
 
 export default function TodayPage() {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['health'],
-    queryFn: () => apiFetch<HealthResponse>('/health'),
-  })
+  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null)
+  const [workDate, setWorkDate] = useState(todayIso())
+
+  const { data: sites, isLoading: sitesLoading } = useSites({ status: 'active' })
+  const selectedSite = sites?.find((s) => s.id === selectedSiteId) ?? null
 
   return (
-    <div className="p-4">
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <h2 className="text-base font-semibold text-gray-900">System status</h2>
-        {isLoading && <p className="mt-1 text-sm text-gray-500">Checking backend…</p>}
-        {isError && (
-          <p className="mt-1 text-sm text-red-600">Could not reach the backend API.</p>
-        )}
-        {data && (
-          <p className="mt-1 text-sm text-gray-600">
-            API: <span className="font-medium">{data.status}</span> · Database:{' '}
-            <span className="font-medium">{data.database ? 'connected' : 'unreachable'}</span>
-          </p>
-        )}
-      </div>
+    <div className="flex flex-col gap-4 p-4 pb-24">
+      <label className="text-sm">
+        <span className="mb-1 block font-medium text-slate-700">Date</span>
+        <input
+          type="date"
+          value={workDate}
+          onChange={(e) => setWorkDate(e.target.value)}
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+        />
+      </label>
 
-      <div className="mt-4 rounded-xl border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
-        Site selection, date picker, and attendance marking will appear here (Phase 3).
-      </div>
+      {sitesLoading && <p className="text-sm text-slate-500">Loading sites…</p>}
+
+      {!sitesLoading && sites?.length === 0 && (
+        <EmptyState message="Add an active site first to start marking attendance." />
+      )}
+
+      {sites && sites.length > 0 && !selectedSite && (
+        <SiteGrid sites={sites} onSelect={setSelectedSiteId} />
+      )}
+
+      {selectedSite && (
+        <SiteCrewBoard site={selectedSite} workDate={workDate} onBack={() => setSelectedSiteId(null)} />
+      )}
     </div>
   )
 }

@@ -1,12 +1,20 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useCurrentAdmin, useLogout } from '../../features/auth/useAuth'
+import {
+  BuildingIcon,
+  BrandLogo,
+  CashIcon,
+  ClipboardIcon,
+  MoreIcon,
+  UsersIcon,
+} from '../../components/icons'
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Today', icon: '📋', end: true },
-  { to: '/labourers', label: 'Labourers', icon: '👷' },
-  { to: '/sites', label: 'Sites', icon: '🏗️' },
-  { to: '/payments', label: 'Payments', icon: '💵' },
-  { to: '/more', label: 'More', icon: '⋯' },
+  { to: '/', label: 'Today', Icon: ClipboardIcon, end: true },
+  { to: '/labourers', label: 'Labourers', Icon: UsersIcon },
+  { to: '/sites', label: 'Sites', Icon: BuildingIcon },
+  { to: '/payments', label: 'Payments', Icon: CashIcon },
+  { to: '/more', label: 'More', Icon: MoreIcon },
 ] as const
 
 export default function AppShell() {
@@ -14,14 +22,17 @@ export default function AppShell() {
   const logout = useLogout()
 
   return (
-    <div className="flex h-full flex-col bg-gray-50">
-      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
-        <h1 className="text-lg font-semibold text-gray-900">Labour Management</h1>
+    <div className="flex h-full flex-col bg-slate-50">
+      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2">
+        <h1 className="flex items-center" aria-label="Labour Management">
+          <BrandLogo className="h-10 w-10 text-brand-500" />
+          <span className="sr-only">Labour Management</span>
+        </h1>
         {admin && (
           <button
             type="button"
             onClick={() => logout.mutate()}
-            className="text-sm text-gray-500 active:text-gray-700"
+            className="cursor-pointer text-sm text-slate-500 transition-colors active:text-slate-700"
           >
             {admin.name.split(' ')[0]} · Logout
           </button>
@@ -32,21 +43,21 @@ export default function AppShell() {
         <Outlet />
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 border-t border-gray-200 bg-white">
+      <nav className="fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white">
         <ul className="grid grid-cols-5">
-          {NAV_ITEMS.map((item) => (
-            <li key={item.to}>
+          {NAV_ITEMS.map(({ to, label, Icon, ...rest }) => (
+            <li key={to}>
               <NavLink
-                to={item.to}
-                end={'end' in item ? item.end : false}
+                to={to}
+                end={'end' in rest ? rest.end : false}
                 className={({ isActive }) =>
-                  `flex flex-col items-center gap-0.5 py-2 text-xs ${
-                    isActive ? 'text-brand-600 font-medium' : 'text-gray-500'
+                  `flex min-h-14 cursor-pointer flex-col items-center justify-center gap-0.5 py-2 text-xs transition-colors ${
+                    isActive ? 'font-semibold text-brand-600' : 'text-slate-500'
                   }`
                 }
               >
-                <span className="text-lg leading-none">{item.icon}</span>
-                {item.label}
+                <Icon className="h-6 w-6" />
+                {label}
               </NavLink>
             </li>
           ))}
