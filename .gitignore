@@ -11,6 +11,11 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+# This project uses pip + requirements.txt, not uv; ignore uv's venv/lock
+# artifacts in case `uv` is accidentally invoked here (it will overwrite
+# backend/.venv with an empty environment otherwise).
+backend/uv.lock
+.python-version
 
 # Node / frontend
 frontend/node_modules/
