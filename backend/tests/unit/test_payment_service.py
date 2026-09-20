@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from app.core.errors import ConflictError
+from app.core.errors import ConflictError, NotFoundError
 from app.modules.adjustments.repository import AdjustmentRepository
 from app.modules.advances.repository import AdvanceRepository
 from app.modules.advances.schemas import AdvanceCreate
@@ -298,3 +298,48 @@ async def test_pending_unmarked_record_is_excluded_from_earnings_and_not_paid(
     assert preview.earnings == 0
     assert pending.id not in preview.unpaid_work_record_ids
 
+
+
+async def test_preview_for_unknown_labourer_raises_not_found(payment_service):
+    with pytest.raises(NotFoundError):
+        await payment_service.preview(
+            "507f1f77bcf86cd799439011", PeriodType.DAILY, date(2026, 2, 1), date(2026, 2, 1)
+        )
+
+
+async def test_create_payment_works_without_an_idempotency_key(
+    payment_service, attendance_service, labourer_id, site_id
+):
+    await _mark_full_day(attendance_service, labourer_id, site_id, date(2026, 2, 1))
+
+    payment = await payment_service.create_payment(
+        PaymentCreate(
+            labourer_id=labourer_id,
+            period_type=PeriodType.DAILY,
+            period_start=date(2026, 2, 1),
+            period_end=date(2026, 2, 1),
+            paid_amount="800",
+        ),
+        "admin-1",
+        idempotency_key=None,
+    )
+
+    assert payment.paid_amount == 800
+    # without a key, nothing protects against a second identical call --
+    # that's an accepted tradeoff for callers that don't supply one.
+    history = await payment_service.list_for_labourer(labourer_id)
+    assert len(history) == 1
+
+
+async def test_list_for_labourer_with_no_payments_is_empty(payment_service, labourer_id):
+    assert await payment_service.list_for_labourer(labourer_id) == []
+
+
+async def test_zero_earnings_with_no_prior_balance_is_a_zero_suggested_amount(
+    payment_service, labourer_id
+):
+    preview = await payment_service.preview(labourer_id, PeriodType.DAILY, date(2026, 2, 1), date(2026, 2, 1))
+
+    assert preview.earnings == 0
+    assert preview.suggested_amount == 0
+    assert preview.unpaid_work_record_ids == []

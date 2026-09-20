@@ -51,7 +51,7 @@ async def ensure_indexes() -> None:
     await db.site_client_receipts.create_index([("site_id", 1), ("received_on", -1)])
     await db.site_expenses.create_index([("site_id", 1), ("expense_date", -1)])
 
-    await db.wage_history.create_index([("labourer_id", 1), ("effective_from", -1)])
+    await db.wage_history.create_index([("labourer_id", 1), ("effective_from", -1)], unique=True)
 
     # Core invariant: one labourer can only have one work record per date.
     await db.daily_work_records.create_index(

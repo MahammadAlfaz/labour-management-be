@@ -90,7 +90,10 @@ class AttendanceService:
         # HALF_DAY: never auto-derived (e.g. as 50%) -- always manually entered.
         if submitted_amount is None:
             raise ConflictError("HALF_DAY attendance requires a manually entered amount")
-        return wage_snapshot, to_money(submitted_amount)
+        amount = to_money(submitted_amount)
+        if amount <= 0:
+            raise ConflictError("HALF_DAY amount must be greater than zero -- use Absent for ₹0")
+        return wage_snapshot, amount
 
     async def assign(self, payload: WorkRecordAssign, admin_id: str) -> WorkRecordOut:
         labourer = await self._labourer_repo.get_by_id(payload.labourer_id)

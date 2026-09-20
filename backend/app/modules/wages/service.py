@@ -1,6 +1,8 @@
 from datetime import date
 from decimal import Decimal
 
+from pymongo.errors import DuplicateKeyError
+
 from app.core.audit import record_audit_log
 from app.core.errors import ConflictError, NotFoundError
 from app.modules.labourers.repository import LabourerRepository
@@ -25,12 +27,15 @@ class WageService:
         if await self._repo.exists_for_effective_date(labourer_id, payload.effective_from):
             raise ConflictError("A wage entry already exists for this effective date")
 
-        wage = await self._repo.create(
-            labourer_id=labourer_id,
-            daily_wage=payload.daily_wage,
-            effective_from=payload.effective_from,
-            admin_id=admin_id,
-        )
+        try:
+            wage = await self._repo.create(
+                labourer_id=labourer_id,
+                daily_wage=payload.daily_wage,
+                effective_from=payload.effective_from,
+                admin_id=admin_id,
+            )
+        except DuplicateKeyError as exc:
+            raise ConflictError("A wage entry already exists for this effective date") from exc
         await record_audit_log(
             entity_type="wage_history",
             entity_id=wage.id,

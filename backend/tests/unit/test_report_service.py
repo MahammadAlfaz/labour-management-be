@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 
+from app.core.errors import NotFoundError
 from app.modules.attendance.repository import WorkRecordRepository
 from app.modules.attendance.schemas import AttendanceStatus, WorkRecordAssign, WorkRecordUpdate
 from app.modules.attendance.service import AttendanceService
@@ -145,3 +146,35 @@ async def test_site_attendance_report_handles_pending_unmarked_record(
 
     assert len(report.entries) == 1
     assert report.entries[0].status is None
+
+
+async def test_labourer_history_unknown_labourer_raises_not_found(report_service):
+    with pytest.raises(NotFoundError):
+        await report_service.labourer_history(
+            "507f1f77bcf86cd799439011", date(2026, 2, 1), date(2026, 2, 28)
+        )
+
+
+async def test_site_attendance_unknown_site_raises_not_found(report_service):
+    with pytest.raises(NotFoundError):
+        await report_service.site_attendance(
+            "507f1f77bcf86cd799439011", date(2026, 2, 1), date(2026, 2, 28)
+        )
+
+
+async def test_labourer_history_empty_range_returns_no_records(
+    report_service, attendance_service, labourer_id, site_id
+):
+    await _mark_full_day(attendance_service, labourer_id, site_id, date(2026, 2, 1))
+
+    report = await report_service.labourer_history(labourer_id, date(2026, 3, 1), date(2026, 3, 31))
+
+    assert report.work_records == []
+    assert report.total_earnings == 0
+    assert report.outstanding_balance == 0
+
+
+async def test_weekly_settlement_with_no_active_labourers_is_empty(report_service, mongo_db):
+    report = await report_service.weekly_settlement(date(2026, 2, 1), date(2026, 2, 7))
+
+    assert report.entries == []

@@ -2,9 +2,14 @@ from datetime import date
 
 import pytest
 
-from app.core.errors import ConflictError
+from app.core.errors import ConflictError, NotFoundError
 from app.modules.attendance.repository import WorkRecordRepository
-from app.modules.attendance.schemas import AttendanceStatus, WorkRecordAssign, WorkRecordUpdate
+from app.modules.attendance.schemas import (
+    AmountAdjustment,
+    AttendanceStatus,
+    WorkRecordAssign,
+    WorkRecordUpdate,
+)
 from app.modules.attendance.service import AttendanceService
 from app.modules.labourers.repository import LabourerRepository
 from app.modules.labourers.schemas import LabourerCreate
@@ -203,6 +208,24 @@ async def test_half_day_requires_manual_amount(attendance_service, labourer_with
     assert record.wage_snapshot == 800
 
 
+async def test_half_day_rejects_zero_or_negative_amount(attendance_service, labourer_with_wage, two_sites):
+    site_a, _ = two_sites
+    assigned = await attendance_service.assign(
+        WorkRecordAssign(labourer_id=labourer_with_wage.id, site_id=site_a.id, work_date=date(2026, 2, 1)),
+        "admin-1",
+    )
+
+    with pytest.raises(ConflictError, match="greater than zero"):
+        await attendance_service.update(
+            assigned.id, WorkRecordUpdate(status=AttendanceStatus.HALF_DAY, amount="0"), "admin-1"
+        )
+
+    with pytest.raises(ConflictError, match="greater than zero"):
+        await attendance_service.update(
+            assigned.id, WorkRecordUpdate(status=AttendanceStatus.HALF_DAY, amount="-100"), "admin-1"
+        )
+
+
 async def test_absent_defaults_to_zero_regardless_of_submitted_amount(
     attendance_service, labourer_with_wage, two_sites
 ):
@@ -291,3 +314,54 @@ async def test_search_available_labourers_flags_those_assigned_elsewhere(
     unrelated_day = await attendance_service.search_available_labourers(date(2026, 2, 7), None)
     entry_other_day = next(r for r in unrelated_day if r.labourer_id == labourer_with_wage.id)
     assert entry_other_day.unavailable_reason is None
+
+
+UNKNOWN_RECORD_ID = "507f1f77bcf86cd799439011"
+
+
+async def test_get_detail_unknown_record_raises_not_found(attendance_service):
+    with pytest.raises(NotFoundError):
+        await attendance_service.get_detail(UNKNOWN_RECORD_ID)
+
+
+async def test_update_unknown_record_raises_not_found(attendance_service):
+    with pytest.raises(NotFoundError):
+        await attendance_service.update(
+            UNKNOWN_RECORD_ID, WorkRecordUpdate(status=AttendanceStatus.ABSENT), "admin-1"
+        )
+
+
+async def test_unassign_unknown_record_raises_not_found(attendance_service):
+    with pytest.raises(NotFoundError):
+        await attendance_service.unassign(UNKNOWN_RECORD_ID, "admin-1")
+
+
+async def test_adjust_amount_unknown_record_raises_not_found(attendance_service):
+    with pytest.raises(NotFoundError):
+        await attendance_service.adjust_amount(
+            UNKNOWN_RECORD_ID, AmountAdjustment(amount="100"), "admin-1"
+        )
+
+
+async def test_assign_unknown_labourer_raises_not_found(attendance_service, two_sites):
+    site_a, _ = two_sites
+    with pytest.raises(NotFoundError):
+        await attendance_service.assign(
+            WorkRecordAssign(labourer_id=UNKNOWN_RECORD_ID, site_id=site_a.id, work_date=date(2026, 2, 1)),
+            "admin-1",
+        )
+
+
+async def test_assign_unknown_site_raises_not_found(attendance_service, labourer_with_wage):
+    with pytest.raises(NotFoundError):
+        await attendance_service.assign(
+            WorkRecordAssign(
+                labourer_id=labourer_with_wage.id, site_id=UNKNOWN_RECORD_ID, work_date=date(2026, 2, 1)
+            ),
+            "admin-1",
+        )
+
+
+async def test_get_board_unknown_site_raises_not_found(attendance_service):
+    with pytest.raises(NotFoundError):
+        await attendance_service.get_board(UNKNOWN_RECORD_ID, date(2026, 2, 1))

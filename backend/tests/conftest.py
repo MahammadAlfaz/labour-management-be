@@ -26,15 +26,22 @@ _REPOSITORY_MODULES = [
 
 
 @pytest.fixture
-def mongo_db(monkeypatch):
+async def mongo_db(monkeypatch):
     """An isolated in-memory Mongo database shared across repositories for one test.
 
     Patches get_database in every repository module so services that touch
     multiple collections (e.g. AttendanceService touching labourers, sites,
-    wages, and work records) all see the same fake database.
+    wages, and work records) all see the same fake database. Also creates the
+    real production indexes (including the unique ones) so "duplicate" tests
+    exercise the actual DB-level constraint, not just an application-level
+    pre-check that could race under concurrent writers.
     """
+    import app.db as db_module
+
     db = AsyncMongoMockClient()["test_db"]
+    monkeypatch.setattr(db_module, "get_database", lambda db=db: db)
     for module_path in _REPOSITORY_MODULES:
         module = importlib.import_module(module_path)
         monkeypatch.setattr(module, "get_database", lambda db=db: db)
+    await db_module.ensure_indexes()
     return db

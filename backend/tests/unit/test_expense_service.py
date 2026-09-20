@@ -80,6 +80,40 @@ async def test_update_rejects_mismatched_record_id(expense_service, work_record_
         )
 
 
+async def test_delete_rejects_mismatched_record_id(expense_service, work_record_id):
+    expense = await expense_service.add(work_record_id, ExpenseCreate(category="AUTO", amount="30"), "admin-1")
+
+    with pytest.raises(NotFoundError):
+        await expense_service.delete("507f1f77bcf86cd799439011", expense.id, "admin-1")
+
+    # the expense must still exist -- the mismatched delete should not have gone through
+    assert len(await expense_service.list_for_record(work_record_id)) == 1
+
+
+async def test_delete_unknown_expense_raises_not_found(expense_service, work_record_id):
+    with pytest.raises(NotFoundError):
+        await expense_service.delete(work_record_id, "507f1f77bcf86cd799439011", "admin-1")
+
+
+async def test_update_unknown_expense_raises_not_found(expense_service, work_record_id):
+    with pytest.raises(NotFoundError):
+        await expense_service.update(
+            work_record_id, "507f1f77bcf86cd799439011", ExpenseUpdate(amount="10"), "admin-1"
+        )
+
+
+async def test_list_for_unknown_record_raises_not_found(expense_service):
+    with pytest.raises(NotFoundError):
+        await expense_service.list_for_record("507f1f77bcf86cd799439011")
+
+
+async def test_expense_rejects_non_positive_amount(work_record_id):
+    with pytest.raises(ValueError):
+        ExpenseCreate(category="PETROL", amount="0")
+    with pytest.raises(ValueError):
+        ExpenseCreate(category="PETROL", amount="-10")
+
+
 async def test_earnings_calculation_includes_expenses(work_record_id, mongo_db):
     expense_service = ExpenseService(ExpenseRepository(), WorkRecordRepository())
     await expense_service.add(work_record_id, ExpenseCreate(category="PETROL", amount="50"), "admin-1")

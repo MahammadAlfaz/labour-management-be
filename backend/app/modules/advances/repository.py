@@ -42,7 +42,9 @@ class AdvanceRepository:
         return _to_out(doc)
 
     async def list_for_labourer(self, labourer_id: str) -> list[AdvanceOut]:
-        cursor = self._collection.find({"labourer_id": labourer_id}).sort("given_at", -1)
+        cursor = self._collection.find({"labourer_id": labourer_id}).sort(
+            [("given_at", -1), ("_id", -1)]
+        )
         return [_to_out(doc) async for doc in cursor]
 
     async def list_unsettled(self, labourer_id: str) -> list[AdvanceOut]:

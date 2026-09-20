@@ -1,8 +1,11 @@
 import pytest
 
+from app.core.errors import NotFoundError
 from app.modules.labourers.repository import LabourerRepository
 from app.modules.labourers.schemas import LabourerCreate, LabourerUpdate
 from app.modules.labourers.service import LabourerService
+
+UNKNOWN_LABOURER_ID = "507f1f77bcf86cd799439011"
 
 
 @pytest.fixture
@@ -45,3 +48,35 @@ async def test_update_changes_fields_without_touching_status(service):
 
     assert updated.name == "New Name"
     assert updated.status == "active"
+
+
+async def test_get_unknown_labourer_raises_not_found(service):
+    with pytest.raises(NotFoundError):
+        await service.get(UNKNOWN_LABOURER_ID)
+
+
+async def test_update_unknown_labourer_raises_not_found(service):
+    with pytest.raises(NotFoundError):
+        await service.update(UNKNOWN_LABOURER_ID, LabourerUpdate(name="X"), "admin-1")
+
+
+async def test_set_active_unknown_labourer_raises_not_found(service):
+    with pytest.raises(NotFoundError):
+        await service.set_active(UNKNOWN_LABOURER_ID, False, "admin-1")
+
+
+async def test_search_filters_by_partial_case_insensitive_name(service):
+    await service.create(LabourerCreate(name="Ramesh Kumar"), "admin-1")
+    await service.create(LabourerCreate(name="Suresh"), "admin-1")
+
+    results = await service.list(status=None, search="ramesh")
+
+    assert {l.name for l in results} == {"Ramesh Kumar"}
+
+
+async def test_update_strips_whitespace_from_name(service):
+    labourer = await service.create(LabourerCreate(name="Original"), "admin-1")
+
+    updated = await service.update(labourer.id, LabourerUpdate(name="  Padded Name  "), "admin-1")
+
+    assert updated.name == "Padded Name"

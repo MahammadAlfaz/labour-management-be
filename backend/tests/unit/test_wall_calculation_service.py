@@ -113,3 +113,24 @@ async def test_delete_removes_the_record(service):
 async def test_get_unknown_id_raises_not_found(service):
     with pytest.raises(NotFoundError):
         await service.get("000000000000000000000000")
+
+
+async def test_update_unknown_id_raises_not_found(service):
+    with pytest.raises(NotFoundError):
+        await service.update(
+            "000000000000000000000000", WallCalculationUpdate(rate_per_sqft=Decimal("30")), "admin-1"
+        )
+
+
+async def test_update_with_unknown_site_id_raises_not_found(service):
+    calc = await service.create(_payload(), "admin-1")
+
+    with pytest.raises(NotFoundError):
+        await service.update(
+            calc.id, WallCalculationUpdate(site_id="000000000000000000000000"), "admin-1"
+        )
+
+
+async def test_delete_unknown_id_raises_not_found(service):
+    with pytest.raises(NotFoundError):
+        await service.delete("000000000000000000000000", "admin-1")

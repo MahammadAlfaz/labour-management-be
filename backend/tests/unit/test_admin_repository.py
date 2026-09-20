@@ -42,3 +42,35 @@ async def test_set_active_deactivates_admin(admin_repo):
     found = await admin_repo.get_by_id(created.id)
     assert found is not None
     assert found.is_active is False
+
+
+async def test_get_by_id_returns_none_for_unknown_but_valid_id(admin_repo):
+    assert await admin_repo.get_by_id("507f1f77bcf86cd799439011") is None
+
+
+async def test_find_by_google_sub_returns_none_when_missing(admin_repo):
+    assert await admin_repo.find_by_google_sub("no-such-sub") is None
+
+
+async def test_find_by_email_returns_none_when_missing(admin_repo):
+    assert await admin_repo.find_by_email("nobody@example.com") is None
+
+
+async def test_list_all_returns_every_admin(admin_repo):
+    await admin_repo.create(google_sub="sub-a", email="a@example.com", name="A")
+    await admin_repo.create(google_sub="sub-b", email="b@example.com", name="B")
+
+    admins = await admin_repo.list_all()
+
+    assert {a.email for a in admins} == {"a@example.com", "b@example.com"}
+
+
+async def test_reactivating_an_admin_round_trips(admin_repo):
+    created = await admin_repo.create(google_sub="sub-4", email="reactivate@example.com", name="Y")
+    await admin_repo.set_active(created.id, False)
+
+    await admin_repo.set_active(created.id, True)
+
+    found = await admin_repo.get_by_id(created.id)
+    assert found is not None
+    assert found.is_active is True

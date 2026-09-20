@@ -4,8 +4,9 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 
 from bson import ObjectId
+from bson.decimal128 import Decimal128
 
-from app.core.money import from_decimal128, to_decimal128, zero
+from app.core.money import from_decimal128, to_decimal128, to_money, zero
 from app.db import get_database
 from app.modules.sites.schemas import ClientReceiptOut, SiteExpenseOut, SiteOut
 
@@ -164,11 +165,24 @@ class SiteRepository:
         Payments are intentionally not added to labour cost: they settle the
         same wages/expenses and would otherwise double-count the expense.
         """
+
+        def _extract_total(rows: list[dict]) -> Decimal:
+            # $sum over zero matching documents returns no group in real
+            # MongoDB (rows == []), but some drivers/test doubles synthesize
+            # a {"total": 0} row instead -- handle both shapes, and both
+            # Decimal128 and plain-numeric total values, uniformly.
+            if not rows:
+                return zero()
+            total = rows[0]["total"]
+            if isinstance(total, Decimal128):
+                return from_decimal128(total) or zero()
+            return to_money(total)
+
         db = get_database()
         labour_result = await db.daily_work_records.aggregate(
             [{"$match": {"site_id": site_id}}, {"$group": {"_id": None, "total": {"$sum": "$amount"}}}]
         ).to_list(length=1)
-        labour = from_decimal128(labour_result[0]["total"]) if labour_result else zero()
+        labour = _extract_total(labour_result)
 
         travel_result = await db.daily_work_records.aggregate(
             [
@@ -179,14 +193,14 @@ class SiteRepository:
                 {"$group": {"_id": None, "total": {"$sum": "$expenses.amount"}}},
             ]
         ).to_list(length=1)
-        travel = from_decimal128(travel_result[0]["total"]) if travel_result else zero()
+        travel = _extract_total(travel_result)
 
         receipts_result = await db.site_client_receipts.aggregate(
             [{"$match": {"site_id": site_id}}, {"$group": {"_id": None, "total": {"$sum": "$amount"}}}]
         ).to_list(length=1)
-        receipts = from_decimal128(receipts_result[0]["total"]) if receipts_result else zero()
+        receipts = _extract_total(receipts_result)
         site_expense_result = await db.site_expenses.aggregate(
             [{"$match": {"site_id": site_id}}, {"$group": {"_id": None, "total": {"$sum": "$amount"}}}]
         ).to_list(length=1)
-        site_expenses = from_decimal128(site_expense_result[0]["total"]) if site_expense_result else zero()
-        return labour or zero(), travel or zero(), receipts or zero(), site_expenses or zero()
+        site_expenses = _extract_total(site_expense_result)
+        return labour, travel, receipts, site_expenses

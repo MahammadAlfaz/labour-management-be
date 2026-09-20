@@ -100,7 +100,9 @@ class PaymentRepository:
         return _to_out(doc) if doc else None
 
     async def list_for_labourer(self, labourer_id: str) -> list[PaymentOut]:
-        cursor = self._collection.find({"labourer_id": labourer_id}).sort("period_end", -1)
+        cursor = self._collection.find({"labourer_id": labourer_id}).sort(
+            [("period_end", -1), ("_id", -1)]
+        )
         return [_to_out(doc) async for doc in cursor]
 
     async def sum_balance(self, labourer_id: str) -> Decimal:
