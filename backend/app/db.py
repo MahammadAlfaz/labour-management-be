@@ -70,4 +70,7 @@ async def ensure_indexes() -> None:
 
     await db.audit_logs.create_index([("entity_type", 1), ("entity_id", 1), ("at", -1)])
 
+    await db.wall_calculations.create_index([("site_id", 1), ("created_at", -1)])
+    await db.wall_calculations.create_index("created_at")
+
     logger.info("MongoDB indexes ensured")

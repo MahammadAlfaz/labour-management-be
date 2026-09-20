@@ -20,6 +20,7 @@ from app.modules.payments.router import router as payments_router
 from app.modules.reports.router import router as reports_router
 from app.modules.sites.router import router as sites_router
 from app.modules.wages.router import router as wages_router
+from app.modules.wall_calculations.router import router as wall_calculations_router
 
 
 @asynccontextmanager
@@ -58,6 +59,7 @@ def create_app() -> FastAPI:
     app.include_router(adjustments_router)
     app.include_router(payments_router)
     app.include_router(reports_router)
+    app.include_router(wall_calculations_router)
 
     @app.get("/health")
     async def health() -> dict:

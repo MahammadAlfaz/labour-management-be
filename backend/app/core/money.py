@@ -32,3 +32,12 @@ def from_decimal128(value: Decimal128 | None) -> Decimal | None:
     if value is None:
         return None
     return value.to_decimal()
+
+
+def to_decimal128_exact(value: Decimal) -> Decimal128:
+    """Convert to Decimal128 without quantizing to currency places.
+
+    Use this for non-currency decimals (measurements, areas) where full
+    precision must be preserved internally; use to_decimal128 for money.
+    """
+    return Decimal128(value)

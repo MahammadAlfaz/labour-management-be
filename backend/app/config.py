@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     supabase_jwks_url: str = ""
     supabase_bucket: str = "labour-management"
 
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash"
+
     @property
     def admin_email_list(self) -> list[str]:
         return [e.strip().lower() for e in self.admin_emails.split(",") if e.strip()]

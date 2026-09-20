@@ -21,6 +21,7 @@ _REPOSITORY_MODULES = [
     "app.modules.deductions.repository",
     "app.modules.adjustments.repository",
     "app.modules.payments.repository",
+    "app.modules.wall_calculations.repository",
 ]
 
 
