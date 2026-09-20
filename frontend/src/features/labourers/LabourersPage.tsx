@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Avatar from '../../components/Avatar'
 import EmptyState from '../../components/EmptyState'
 import { ChevronRightIcon, PlusIcon, SearchIcon } from '../../components/icons'
 import { PrimaryButton } from '../../components/form'
@@ -82,19 +83,7 @@ export default function LabourersPage() {
               className="flex w-full cursor-pointer items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-colors active:bg-slate-50"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100">
-                  {labourer.photo_url ? (
-                    <img
-                      src={labourer.photo_url}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-sm font-semibold text-slate-400">
-                      {labourer.name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
+                <Avatar photoUrl={labourer.photo_url} name={labourer.name} />
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-slate-900">{labourer.name}</p>
                   <p className="truncate text-sm text-slate-500">

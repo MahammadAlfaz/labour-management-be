@@ -61,12 +61,14 @@ class WorkRecordDetail(WorkRecordOut):
 class LabourerBoardEntry(BaseModel):
     labourer_id: str
     labourer_name: str
+    labourer_photo_url: str | None = None
     record: WorkRecordOut
 
 
 class AvailableLabourer(BaseModel):
     labourer_id: str
     labourer_name: str
+    labourer_photo_url: str | None = None
     unavailable_reason: str | None = Field(
         default=None, description="Set when already assigned/marked elsewhere for this date"
     )

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Avatar from '../../components/Avatar'
 import { CloseIcon } from '../../components/icons'
 import { PrimaryButton } from '../../components/form'
 import { ApiError } from '../../lib/apiClient'
@@ -90,10 +91,11 @@ export default function LabourerBoardCard({
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <p className="font-semibold text-slate-900">{entry.labourer_name}</p>
+        <div className="flex min-w-0 items-center gap-2">
+          <Avatar photoUrl={entry.labourer_photo_url} name={entry.labourer_name} size="sm" />
+          <p className="truncate font-semibold text-slate-900">{entry.labourer_name}</p>
           {isPending && (
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+            <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
               Not yet marked
             </span>
           )}

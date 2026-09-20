@@ -281,6 +281,7 @@ class AttendanceService:
                 LabourerBoardEntry(
                     labourer_id=record.labourer_id,
                     labourer_name=labourer.name if labourer else "Unknown labourer",
+                    labourer_photo_url=labourer.photo_url if labourer else None,
                     record=record,
                 )
             )
@@ -310,6 +311,7 @@ class AttendanceService:
                 AvailableLabourer(
                     labourer_id=labourer.id,
                     labourer_name=labourer.name,
+                    labourer_photo_url=labourer.photo_url,
                     unavailable_reason=unavailable_reason,
                 )
             )

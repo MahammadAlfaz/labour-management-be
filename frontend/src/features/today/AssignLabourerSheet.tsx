@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Avatar from '../../components/Avatar'
 import BottomSheet from '../../components/BottomSheet'
 import { SearchIcon } from '../../components/icons'
 import { ApiError } from '../../lib/apiClient'
@@ -57,11 +58,14 @@ export default function AssignLabourerSheet({
                   type="button"
                   disabled={unavailable || assignMutation.isPending}
                   onClick={() => handleAssign(labourer.labourer_id)}
-                  className="flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-white p-3 text-left transition-colors active:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left transition-colors active:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <span className="font-medium text-slate-900">{labourer.labourer_name}</span>
+                  <span className="flex min-w-0 items-center gap-3">
+                    <Avatar photoUrl={labourer.labourer_photo_url} name={labourer.labourer_name} size="sm" />
+                    <span className="truncate font-medium text-slate-900">{labourer.labourer_name}</span>
+                  </span>
                   {unavailable && (
-                    <span className="text-xs text-amber-700">{labourer.unavailable_reason}</span>
+                    <span className="shrink-0 text-xs text-amber-700">{labourer.unavailable_reason}</span>
                   )}
                 </button>
               </li>

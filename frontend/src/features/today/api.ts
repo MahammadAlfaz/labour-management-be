@@ -42,12 +42,14 @@ export interface WorkRecordDetail extends WorkRecord {
 export interface BoardEntry {
   labourer_id: string
   labourer_name: string
+  labourer_photo_url: string | null
   record: WorkRecord
 }
 
 export interface AvailableLabourer {
   labourer_id: string
   labourer_name: string
+  labourer_photo_url: string | null
   unavailable_reason: string | null
 }
 
