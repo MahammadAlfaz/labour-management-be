@@ -41,3 +41,7 @@ services:
         sync: false
       - key: SUPABASE_BUCKET
         value: labour-management
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
