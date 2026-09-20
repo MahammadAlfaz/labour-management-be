@@ -4,6 +4,7 @@ import { DangerButton, Field, PrimaryButton, Select, SecondaryButton, TextInput 
 import { ApiError } from '../../lib/apiClient'
 import { useSites } from '../sites/useSites'
 import type { LayerInput, MeasurementLine, WallCalculation } from './api'
+import { generateWallCalculationPdf } from './generateWallCalculationPdf'
 import LayerEditor from './LayerEditor'
 import MeasurementTable from './MeasurementTable'
 import {
@@ -157,6 +158,12 @@ export default function WallCalculationFormSheet({
     onClose()
   }
 
+  function handleDownloadPdf() {
+    if (!calculation) return
+    const site = sites?.find((s) => s.id === calculation.site_id)
+    generateWallCalculationPdf(calculation, site?.name)
+  }
+
   return (
     <BottomSheet title={isEdit ? 'Edit calculation' : 'New wall calculation'} onClose={onClose}>
       <div className="flex flex-col gap-4">
@@ -278,6 +285,12 @@ export default function WallCalculationFormSheet({
         <PrimaryButton onClick={handleSave} disabled={isSaving} className="w-full">
           {isSaving ? 'Saving…' : isEdit ? 'Save changes' : 'Save calculation'}
         </PrimaryButton>
+
+        {isEdit && (
+          <SecondaryButton onClick={handleDownloadPdf} className="w-full">
+            Download PDF proof
+          </SecondaryButton>
+        )}
 
         {isEdit && (
           <DangerButton onClick={handleDelete} disabled={deleteMutation.isPending} className="w-full">
