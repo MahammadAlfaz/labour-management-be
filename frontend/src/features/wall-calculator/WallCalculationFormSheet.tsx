@@ -37,6 +37,7 @@ export default function WallCalculationFormSheet({
   onClose: () => void
 }) {
   const isEdit = Boolean(calculation)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { data: sites } = useSites({})
@@ -183,13 +184,32 @@ export default function WallCalculationFormSheet({
 
         <div className="flex flex-col gap-2">
           <p className="text-sm font-medium text-slate-700">Measurement sheet</p>
-          <SecondaryButton
-            onClick={() => fileInputRef.current?.click()}
-            disabled={extractMutation.isPending}
-            className="w-full"
-          >
-            {extractMutation.isPending ? 'Reading image…' : 'Upload handwritten measurements'}
-          </SecondaryButton>
+          <div className="flex gap-2">
+            <SecondaryButton
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={extractMutation.isPending}
+              className="flex-1"
+            >
+              {extractMutation.isPending ? 'Reading…' : 'Take photo'}
+            </SecondaryButton>
+            <SecondaryButton
+              onClick={() => fileInputRef.current?.click()}
+              disabled={extractMutation.isPending}
+              className="flex-1"
+            >
+              {extractMutation.isPending ? 'Reading…' : 'Choose file'}
+            </SecondaryButton>
+          </div>
+          {/* capture forces the camera directly on mobile; the plain input
+              opens the file browser / photo library on both mobile and desktop. */}
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleFileChange}
+          />
           <input
             ref={fileInputRef}
             type="file"

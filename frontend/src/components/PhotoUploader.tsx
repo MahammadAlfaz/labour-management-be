@@ -20,7 +20,8 @@ export default function PhotoUploader({
   label?: string
   PlaceholderIcon?: ComponentType<SVGProps<SVGSVGElement>>
 }) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -44,6 +45,7 @@ export default function PhotoUploader({
 
   const displayUrl = preview ?? photoUrl
   const busy = isUploading || isRemoving
+  const verb = photoUrl ? `Change ${label.toLowerCase()}` : `Add ${label.toLowerCase()}`
 
   return (
     <div className="flex items-center gap-3">
@@ -56,14 +58,23 @@ export default function PhotoUploader({
       </div>
 
       <div className="flex flex-col gap-1">
-        <div className="flex gap-3">
+        <p className="text-sm font-medium text-slate-700">{isUploading ? 'Uploading…' : verb}</p>
+        <div className="flex flex-wrap gap-x-3 gap-y-1">
           <button
             type="button"
             disabled={busy}
-            onClick={() => inputRef.current?.click()}
+            onClick={() => cameraInputRef.current?.click()}
             className="cursor-pointer text-sm font-medium text-brand-600 transition-colors active:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isUploading ? 'Uploading…' : photoUrl ? `Change ${label.toLowerCase()}` : `Add ${label.toLowerCase()}`}
+            Take photo
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => fileInputRef.current?.click()}
+            className="cursor-pointer text-sm font-medium text-brand-600 transition-colors active:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Choose file
           </button>
           {photoUrl && (
             <button
@@ -79,8 +90,18 @@ export default function PhotoUploader({
         {error && <p className="text-xs text-rose-600">{error}</p>}
       </div>
 
+      {/* capture forces the camera directly on mobile; the plain input opens
+          the file browser / photo library on both mobile and desktop. */}
       <input
-        ref={inputRef}
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      <input
+        ref={fileInputRef}
         type="file"
         accept="image/*"
         className="hidden"
