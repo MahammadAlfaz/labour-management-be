@@ -103,6 +103,19 @@ async def test_cannot_assign_to_a_closed_site(attendance_service, labourer_with_
         )
 
 
+async def test_cannot_assign_an_inactive_labourer(attendance_service, labourer_with_wage, two_sites):
+    site_a, _ = two_sites
+    await LabourerService(LabourerRepository()).set_active(labourer_with_wage.id, False, "admin-1")
+
+    with pytest.raises(ConflictError, match="inactive"):
+        await attendance_service.assign(
+            WorkRecordAssign(
+                labourer_id=labourer_with_wage.id, site_id=site_a.id, work_date=date(2026, 2, 1)
+            ),
+            "admin-1",
+        )
+
+
 async def test_unassign_removes_pending_record(attendance_service, labourer_with_wage, two_sites):
     site_a, _ = two_sites
     record = await attendance_service.assign(

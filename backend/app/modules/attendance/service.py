@@ -96,6 +96,10 @@ class AttendanceService:
         labourer = await self._labourer_repo.get_by_id(payload.labourer_id)
         if labourer is None:
             raise NotFoundError("Labourer not found")
+        if labourer.status != "active":
+            raise ConflictError(
+                f"{labourer.name} is inactive and cannot be assigned -- reactivate them first"
+            )
         site = await self._site_repo.get_by_id(payload.site_id)
         if site is None:
             raise NotFoundError("Site not found")

@@ -164,26 +164,46 @@ export default function LabourerDetailSheet({
           )}
         </div>
 
-        <div className="flex gap-2 border-t border-slate-200 pt-4">
-          <SecondaryButton onClick={onEdit} className="flex-1">
-            Edit details
-          </SecondaryButton>
+        <div className="flex flex-col gap-2 border-t border-slate-200 pt-4">
+          <div className="flex gap-2">
+            <SecondaryButton onClick={onEdit} className="flex-1">
+              Edit details
+            </SecondaryButton>
+            {labourer.status === 'active' ? (
+              <DangerButton
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Remove ${labourer.name} from the active labour list? Their history is kept, and you can bring them back anytime from the Inactive filter.`
+                    )
+                  ) {
+                    setActiveMutation.mutate({ id: labourer.id, isActive: false })
+                  }
+                }}
+                disabled={setActiveMutation.isPending}
+                className="flex-1"
+              >
+                Remove labourer
+              </DangerButton>
+            ) : (
+              <PrimaryButton
+                onClick={() => setActiveMutation.mutate({ id: labourer.id, isActive: true })}
+                disabled={setActiveMutation.isPending}
+                className="flex-1"
+              >
+                Add back as active
+              </PrimaryButton>
+            )}
+          </div>
           {labourer.status === 'active' ? (
-            <DangerButton
-              onClick={() => setActiveMutation.mutate({ id: labourer.id, isActive: false })}
-              disabled={setActiveMutation.isPending}
-              className="flex-1"
-            >
-              Deactivate
-            </DangerButton>
+            <p className="text-xs text-slate-500">
+              Removing hides them from site assignment and new attendance, without deleting past
+              records.
+            </p>
           ) : (
-            <PrimaryButton
-              onClick={() => setActiveMutation.mutate({ id: labourer.id, isActive: true })}
-              disabled={setActiveMutation.isPending}
-              className="flex-1"
-            >
-              Activate
-            </PrimaryButton>
+            <p className="text-xs text-slate-500">
+              This labourer is inactive and won't appear when assigning to a site.
+            </p>
           )}
         </div>
       </div>
