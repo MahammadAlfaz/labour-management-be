@@ -1,0 +1,147 @@
+from datetime import date
+
+import pytest
+
+from app.modules.attendance.repository import WorkRecordRepository
+from app.modules.attendance.schemas import AttendanceStatus, WorkRecordAssign, WorkRecordUpdate
+from app.modules.attendance.service import AttendanceService
+from app.modules.expenses.repository import ExpenseRepository
+from app.modules.expenses.schemas import ExpenseCreate
+from app.modules.expenses.service import ExpenseService
+from app.modules.labourers.repository import LabourerRepository
+from app.modules.labourers.schemas import LabourerCreate
+from app.modules.labourers.service import LabourerService
+from app.modules.payments.schemas import PaymentCreate, PeriodType
+from app.modules.payments.service import PaymentService
+from app.modules.reports.service import ReportService
+from app.modules.sites.repository import SiteRepository
+from app.modules.sites.schemas import SiteCreate
+from app.modules.sites.service import SiteService
+from app.modules.wages.repository import WageRepository
+from app.modules.wages.schemas import WageCreate
+from app.modules.wages.service import WageService
+
+
+@pytest.fixture
+async def site_id(mongo_db):
+    site = await SiteService(SiteRepository()).create(SiteCreate(name="Report Site", location="Loc"), "admin-1")
+    return site.id
+
+
+@pytest.fixture
+async def labourer_id(mongo_db):
+    labourer = await LabourerService(LabourerRepository()).create(LabourerCreate(name="Report Labourer"), "admin-1")
+    await WageService(WageRepository(), LabourerRepository()).add_wage(
+        labourer.id, WageCreate(daily_wage="800", effective_from=date(2026, 1, 1)), "admin-1"
+    )
+    return labourer.id
+
+
+@pytest.fixture
+def attendance_service(mongo_db):
+    return AttendanceService()
+
+
+@pytest.fixture
+def report_service(mongo_db):
+    return ReportService()
+
+
+async def _mark_full_day(attendance_service, labourer_id, site_id, work_date):
+    assigned = await attendance_service.assign(
+        WorkRecordAssign(labourer_id=labourer_id, site_id=site_id, work_date=work_date), "admin-1"
+    )
+    return await attendance_service.update(
+        assigned.id, WorkRecordUpdate(status=AttendanceStatus.FULL_DAY), "admin-1"
+    )
+
+
+async def test_labourer_history_includes_records_and_totals(
+    report_service, attendance_service, labourer_id, site_id
+):
+    record = await _mark_full_day(attendance_service, labourer_id, site_id, date(2026, 2, 1))
+    await ExpenseService(ExpenseRepository(), WorkRecordRepository()).add(
+        record.id, ExpenseCreate(category="PETROL", amount="50"), "admin-1"
+    )
+
+    report = await report_service.labourer_history(labourer_id, date(2026, 2, 1), date(2026, 2, 1))
+
+    assert len(report.work_records) == 1
+    assert report.work_records[0].site_name == "Report Site"
+    assert report.work_records[0].expenses_total == 50
+    assert report.total_earnings == 850
+    assert report.outstanding_balance == 850
+    assert report.work_records[0].paid is False
+
+
+async def test_labourer_history_reflects_paid_status_and_payments(
+    report_service, attendance_service, labourer_id, site_id
+):
+    await _mark_full_day(attendance_service, labourer_id, site_id, date(2026, 2, 1))
+    await PaymentService().create_payment(
+        PaymentCreate(
+            labourer_id=labourer_id,
+            period_type=PeriodType.DAILY,
+            period_start=date(2026, 2, 1),
+            period_end=date(2026, 2, 1),
+            paid_amount="800",
+        ),
+        "admin-1",
+        idempotency_key="report-pay-1",
+    )
+
+    report = await report_service.labourer_history(labourer_id, date(2026, 2, 1), date(2026, 2, 1))
+
+    assert report.work_records[0].paid is True
+    assert len(report.payments) == 1
+    assert report.outstanding_balance == 0
+
+
+async def test_site_attendance_report_totals(report_service, attendance_service, labourer_id, site_id):
+    await _mark_full_day(attendance_service, labourer_id, site_id, date(2026, 2, 1))
+
+    report = await report_service.site_attendance(site_id, date(2026, 2, 1), date(2026, 2, 1))
+
+    assert report.site_name == "Report Site"
+    assert len(report.entries) == 1
+    assert report.entries[0].labourer_name == "Report Labourer"
+    assert report.total_amount == 800
+
+
+async def test_weekly_settlement_flags_unpaid_earnings(report_service, attendance_service, labourer_id, site_id):
+    await _mark_full_day(attendance_service, labourer_id, site_id, date(2026, 2, 2))
+
+    report = await report_service.weekly_settlement(date(2026, 2, 1), date(2026, 2, 7))
+
+    entry = next(e for e in report.entries if e.labourer_id == labourer_id)
+    assert entry.has_unpaid_earnings is True
+    assert entry.suggested_amount == 800
+
+
+async def test_labourer_history_handles_pending_unmarked_record(
+    report_service, attendance_service, labourer_id, site_id
+):
+    """A record that's assigned but not yet marked (status=None) must not crash the report."""
+    await attendance_service.assign(
+        WorkRecordAssign(labourer_id=labourer_id, site_id=site_id, work_date=date(2026, 2, 1)), "admin-1"
+    )
+
+    report = await report_service.labourer_history(labourer_id, date(2026, 2, 1), date(2026, 2, 1))
+
+    assert len(report.work_records) == 1
+    assert report.work_records[0].status is None
+    assert report.work_records[0].amount == 0
+    assert report.total_earnings == 0
+
+
+async def test_site_attendance_report_handles_pending_unmarked_record(
+    report_service, attendance_service, labourer_id, site_id
+):
+    await attendance_service.assign(
+        WorkRecordAssign(labourer_id=labourer_id, site_id=site_id, work_date=date(2026, 2, 1)), "admin-1"
+    )
+
+    report = await report_service.site_attendance(site_id, date(2026, 2, 1), date(2026, 2, 1))
+
+    assert len(report.entries) == 1
+    assert report.entries[0].status is None

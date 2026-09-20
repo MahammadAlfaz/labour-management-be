@@ -25,7 +25,11 @@ def test_decode_rejects_wrong_token_type():
 
 def test_decode_rejects_tampered_token():
     token = create_access_token("abc123", "admin@example.com")
-    tampered = token[:-1] + ("A" if token[-1] != "A" else "B")
+    # Flip a character in the middle of the signature, not the last one --
+    # base64url's final symbol can have unused padding bits, so tampering
+    # only the last character can coincidentally decode to the same bytes.
+    mid = len(token) // 2
+    tampered = token[:mid] + ("A" if token[mid] != "A" else "B") + token[mid + 1 :]
     with pytest.raises(TokenError):
         decode_token(tampered, expected_type="access")
 
