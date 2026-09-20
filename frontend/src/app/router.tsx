@@ -6,6 +6,7 @@ import LabourersPage from '../features/labourers/LabourersPage'
 import SitesPage from '../features/sites/SitesPage'
 import PaymentsPage from '../features/payments/PaymentsPage'
 import MorePage from '../features/more/MorePage'
+import WallCalculatorPage from '../features/wall-calculator/WallCalculatorPage'
 
 export const router = createBrowserRouter([
   {
@@ -21,6 +22,7 @@ export const router = createBrowserRouter([
       { path: 'sites', element: <SitesPage /> },
       { path: 'payments', element: <PaymentsPage /> },
       { path: 'more', element: <MorePage /> },
+      { path: 'wall-calculator', element: <WallCalculatorPage /> },
     ],
   },
 ])

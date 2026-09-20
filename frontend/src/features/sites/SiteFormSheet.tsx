@@ -12,6 +12,7 @@ import { BuildingIcon } from '../../components/icons'
 import { ApiError } from '../../lib/apiClient'
 import type { Site } from './api'
 import SiteFinancePanel from './SiteFinancePanel'
+import SiteWallCalculationsPanel from './SiteWallCalculationsPanel'
 import {
   useRemoveSitePhoto,
   useSetSiteActive,
@@ -22,7 +23,7 @@ import {
 
 export default function SiteFormSheet({ site, onClose }: { site?: Site | null; onClose: () => void }) {
   const isEdit = Boolean(site)
-  const [tab, setTab] = useState<'details' | 'finances'>('details')
+  const [tab, setTab] = useState<'details' | 'finances' | 'wall-calculations'>('details')
   const [name, setName] = useState(site?.name ?? '')
   const [location, setLocation] = useState(site?.location ?? '')
   const [description, setDescription] = useState(site?.description ?? '')
@@ -67,13 +68,13 @@ export default function SiteFormSheet({ site, onClose }: { site?: Site | null; o
     <BottomSheet title={isEdit ? 'Edit site' : 'Add site'} onClose={onClose}>
       <div className="flex flex-col gap-4">
         {isEdit && (
-          <div className="grid grid-cols-2 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Site sections">
+          <div className="grid grid-cols-3 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Site sections">
             <button
               type="button"
               role="tab"
               aria-selected={tab === 'details'}
               onClick={() => setTab('details')}
-              className={`min-h-11 rounded-lg px-3 text-sm font-semibold transition-colors ${tab === 'details' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 active:bg-slate-200'}`}
+              className={`min-h-11 rounded-lg px-2 text-sm font-semibold transition-colors ${tab === 'details' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 active:bg-slate-200'}`}
             >
               Site details
             </button>
@@ -82,14 +83,24 @@ export default function SiteFormSheet({ site, onClose }: { site?: Site | null; o
               role="tab"
               aria-selected={tab === 'finances'}
               onClick={() => setTab('finances')}
-              className={`min-h-11 rounded-lg px-3 text-sm font-semibold transition-colors ${tab === 'finances' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 active:bg-slate-200'}`}
+              className={`min-h-11 rounded-lg px-2 text-sm font-semibold transition-colors ${tab === 'finances' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 active:bg-slate-200'}`}
             >
               Finances
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'wall-calculations'}
+              onClick={() => setTab('wall-calculations')}
+              className={`min-h-11 rounded-lg px-2 text-sm font-semibold transition-colors ${tab === 'wall-calculations' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 active:bg-slate-200'}`}
+            >
+              Wall calculation
             </button>
           </div>
         )}
 
         {isEdit && site && tab === 'finances' && <SiteFinancePanel siteId={site.id} />}
+        {isEdit && site && tab === 'wall-calculations' && <SiteWallCalculationsPanel siteId={site.id} />}
 
         {(!isEdit || tab === 'details') && <>
         {isEdit && site && (

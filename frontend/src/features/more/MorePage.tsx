@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { BuildingIcon, CashIcon, UsersIcon } from '../../components/icons'
+import { Link } from 'react-router-dom'
+import { BuildingIcon, CashIcon, ChevronRightIcon, RulerIcon, UsersIcon } from '../../components/icons'
 import LabourerHistoryView from '../reports/LabourerHistoryView'
 import SiteAttendanceView from '../reports/SiteAttendanceView'
 import WeeklySettlementView from '../reports/WeeklySettlementView'
@@ -21,6 +22,25 @@ export default function MorePage() {
         <p className="text-sm font-medium text-brand-600">REPORTS</p>
         <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Review your work</h2>
         <p className="mt-1 text-sm text-slate-600">Choose a report to view or export its records.</p>
+      </div>
+
+      <div>
+        <p className="text-sm font-medium text-brand-600">TOOLS</p>
+        <Link
+          to="/wall-calculator"
+          className="mt-2 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-sm transition-colors active:bg-slate-50"
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+            <RulerIcon className="h-5 w-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold text-slate-900">Wall calculator</span>
+            <span className="mt-0.5 block text-sm font-normal text-slate-500">
+              Measure a compound wall and calculate its cost.
+            </span>
+          </span>
+          <ChevronRightIcon className="h-5 w-5 shrink-0 text-slate-400" />
+        </Link>
       </div>
 
       <div className="flex flex-col gap-2" role="tablist" aria-label="Reports">

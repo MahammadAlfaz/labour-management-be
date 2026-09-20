@@ -125,6 +125,15 @@ export function AlertIcon(props: IconProps) {
   )
 }
 
+export function RulerIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3" y="8" width="18" height="8" rx="1.5" transform="rotate(-45 12 12)" />
+      <path d="m8.5 10.5 1 1M11 8l1.5 1.5M13.5 5.5l1 1" />
+    </svg>
+  )
+}
+
 export function InboxIcon(props: IconProps) {
   return (
     <svg {...base} {...props}>
