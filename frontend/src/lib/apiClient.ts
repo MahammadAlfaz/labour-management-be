@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+// Strip a trailing slash so `${API_BASE_URL}${path}` never produces a
+// double slash (e.g. VITE_API_URL="https://host.com/" + "/auth/me") --
+// FastAPI treats "//auth/me" as a different, unmatched route and 404s.
+const API_BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000').replace(/\/+$/, '')
 
 let refreshInFlight: Promise<boolean> | null = null
 
