@@ -277,12 +277,14 @@ class AttendanceService:
         entries: list[LabourerBoardEntry] = []
         for record in records:
             labourer = await self._labourer_repo.get_by_id(record.labourer_id)
+            travel_expenses_total = await self._expense_repo.sum_for_record(record.id)
             entries.append(
                 LabourerBoardEntry(
                     labourer_id=record.labourer_id,
                     labourer_name=labourer.name if labourer else "Unknown labourer",
                     labourer_photo_url=labourer.photo_url if labourer else None,
                     record=record,
+                    travel_expenses_total=travel_expenses_total,
                 )
             )
         return entries

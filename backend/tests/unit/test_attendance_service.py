@@ -297,6 +297,39 @@ async def test_board_only_shows_this_sites_crew(attendance_service, labourer_wit
     assert board_b == []
 
 
+async def test_board_includes_travel_expenses_total_per_labourer(
+    attendance_service, labourer_with_wage, two_sites
+):
+    from app.modules.expenses.repository import ExpenseRepository
+    from app.modules.expenses.schemas import ExpenseCreate
+    from app.modules.expenses.service import ExpenseService
+
+    site_a, _site_b = two_sites
+    record = await _mark(
+        attendance_service, labourer_with_wage.id, site_a.id, date(2026, 2, 6), AttendanceStatus.FULL_DAY
+    )
+    expense_service = ExpenseService(ExpenseRepository(), attendance_service._repo)
+    await expense_service.add(record.id, ExpenseCreate(category="PETROL", amount="50"), "admin-1")
+    await expense_service.add(record.id, ExpenseCreate(category="BUS", amount="20"), "admin-1")
+
+    board = await attendance_service.get_board(site_a.id, date(2026, 2, 6))
+
+    assert board[0].travel_expenses_total == 70
+
+
+async def test_board_travel_expenses_total_is_zero_when_none_recorded(
+    attendance_service, labourer_with_wage, two_sites
+):
+    site_a, _site_b = two_sites
+    await _mark(
+        attendance_service, labourer_with_wage.id, site_a.id, date(2026, 2, 6), AttendanceStatus.FULL_DAY
+    )
+
+    board = await attendance_service.get_board(site_a.id, date(2026, 2, 6))
+
+    assert board[0].travel_expenses_total == 0
+
+
 async def test_search_available_labourers_flags_those_assigned_elsewhere(
     attendance_service, labourer_with_wage, two_sites
 ):

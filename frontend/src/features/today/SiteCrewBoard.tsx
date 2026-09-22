@@ -29,6 +29,7 @@ export default function SiteCrewBoard({
 
   const totalLabourers = board?.length ?? 0
   const totalAmount = board?.reduce((sum, entry) => sum + Number(entry.record.amount), 0) ?? 0
+  const totalTravel = board?.reduce((sum, entry) => sum + Number(entry.travel_expenses_total), 0) ?? 0
   const todaysExtraCost =
     siteExpenses
       ?.filter((expense) => expense.expense_date === workDate)
@@ -56,9 +57,10 @@ export default function SiteCrewBoard({
       </button>
 
       {board && (
-        <dl className="grid grid-cols-3 gap-2">
+        <dl className="grid grid-cols-2 gap-2">
           <DailyStat label="Labourers" value={String(totalLabourers)} />
           <DailyStat label="Wages today" value={money(totalAmount)} />
+          <DailyStat label="Petrol / travel" value={money(totalTravel)} />
           <DailyStat label="Other costs" value={money(todaysExtraCost)} />
         </dl>
       )}

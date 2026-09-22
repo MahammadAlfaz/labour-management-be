@@ -44,6 +44,7 @@ export interface BoardEntry {
   labourer_name: string
   labourer_photo_url: string | null
   record: WorkRecord
+  travel_expenses_total: string
 }
 
 export interface AvailableLabourer {

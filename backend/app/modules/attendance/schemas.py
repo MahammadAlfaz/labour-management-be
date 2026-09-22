@@ -63,6 +63,7 @@ class LabourerBoardEntry(BaseModel):
     labourer_name: str
     labourer_photo_url: str | None = None
     record: WorkRecordOut
+    travel_expenses_total: Decimal = Decimal("0")
 
 
 class AvailableLabourer(BaseModel):
