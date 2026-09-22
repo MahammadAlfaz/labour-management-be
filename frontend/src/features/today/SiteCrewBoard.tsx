@@ -3,10 +3,15 @@ import EmptyState from '../../components/EmptyState'
 import { PrimaryButton, SecondaryButton } from '../../components/form'
 import { BuildingIcon, ChevronRightIcon, PlusIcon } from '../../components/icons'
 import type { Site } from '../sites/api'
+import { useSiteExpenses } from '../sites/useSites'
 import AssignLabourerSheet from './AssignLabourerSheet'
 import LabourerBoardCard from './LabourerBoardCard'
 import { useBoard } from './useBoard'
 import SiteExpenseSheet from './SiteExpenseSheet'
+
+function money(value: number) {
+  return `₹${value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
 
 export default function SiteCrewBoard({
   site,
@@ -20,6 +25,14 @@ export default function SiteCrewBoard({
   const [showAssignSheet, setShowAssignSheet] = useState(false)
   const [showExpenseSheet, setShowExpenseSheet] = useState(false)
   const { data: board, isLoading, isError } = useBoard(site.id, workDate)
+  const { data: siteExpenses } = useSiteExpenses(site.id)
+
+  const totalLabourers = board?.length ?? 0
+  const totalAmount = board?.reduce((sum, entry) => sum + Number(entry.record.amount), 0) ?? 0
+  const todaysExtraCost =
+    siteExpenses
+      ?.filter((expense) => expense.expense_date === workDate)
+      .reduce((sum, expense) => sum + Number(expense.amount), 0) ?? 0
 
   return (
     <div className="flex flex-col gap-4">
@@ -41,6 +54,14 @@ export default function SiteCrewBoard({
           <p className="truncate text-xs text-slate-500">Change site</p>
         </div>
       </button>
+
+      {board && (
+        <dl className="grid grid-cols-3 gap-2">
+          <DailyStat label="Labourers" value={String(totalLabourers)} />
+          <DailyStat label="Wages today" value={money(totalAmount)} />
+          <DailyStat label="Other costs" value={money(todaysExtraCost)} />
+        </dl>
+      )}
 
       <PrimaryButton onClick={() => setShowAssignSheet(true)} className="flex w-full items-center justify-center gap-1.5">
         <PlusIcon className="h-5 w-5" />
@@ -75,6 +96,15 @@ export default function SiteCrewBoard({
         />
       )}
       {showExpenseSheet && <SiteExpenseSheet siteId={site.id} workDate={workDate} onClose={() => setShowExpenseSheet(false)} />}
+    </div>
+  )
+}
+
+function DailyStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-3">
+      <dt className="truncate text-xs text-slate-500">{label}</dt>
+      <dd className="mt-1 truncate font-semibold text-slate-900">{value}</dd>
     </div>
   )
 }
