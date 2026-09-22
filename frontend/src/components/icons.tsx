@@ -151,3 +151,11 @@ export function ChatIcon(props: IconProps) {
     </svg>
   )
 }
+
+export function SparkleIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 3v5M12 16v5M3 12h5M16 12h5M5.6 5.6l3.2 3.2M15.2 15.2l3.2 3.2M18.4 5.6l-3.2 3.2M8.8 15.2l-3.2 3.2" />
+    </svg>
+  )
+}

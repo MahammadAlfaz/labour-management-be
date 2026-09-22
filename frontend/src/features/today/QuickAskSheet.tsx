@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import BottomSheet from '../../components/BottomSheet'
-import { PrimaryButton, TextArea } from '../../components/form'
+import { SparkleIcon } from '../../components/icons'
 
 export default function QuickAskSheet({ onClose }: { onClose: () => void }) {
   const [draft, setDraft] = useState('')
@@ -13,32 +12,37 @@ export default function QuickAskSheet({ onClose }: { onClose: () => void }) {
     navigate('/assistant', { state: { initialMessage: message } })
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
       e.preventDefault()
       handleAsk()
+    } else if (e.key === 'Escape') {
+      onClose()
     }
   }
 
   return (
-    <BottomSheet title="Ask the assistant" onClose={onClose}>
-      <div className="flex flex-col gap-3">
-        <p className="text-sm text-slate-600">
-          Ask anything about labourers, sites, attendance, or payments.
-        </p>
-        <TextArea
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Ask the assistant"
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/40 px-4 pt-24"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="flex w-full max-w-md items-center gap-3 rounded-full bg-slate-900 px-4 py-3.5 shadow-2xl"
+      >
+        <SparkleIcon className="h-5 w-5 shrink-0 text-brand-500" />
+        <input
+          autoFocus
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="e.g. How much do we owe Ramesh Kumar?"
-          rows={2}
-          className="resize-none"
-          autoFocus
+          placeholder="What can I help you with today?"
+          className="w-full min-w-0 bg-transparent text-base text-white placeholder:text-slate-400 focus:outline-none"
         />
-        <PrimaryButton onClick={handleAsk} disabled={!draft.trim()} className="w-full">
-          Ask
-        </PrimaryButton>
       </div>
-    </BottomSheet>
+    </div>
   )
 }
