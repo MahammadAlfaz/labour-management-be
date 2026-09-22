@@ -1,6 +1,7 @@
 import { type ChangeEvent, useRef, useState } from 'react'
 import { ApiError } from '../lib/apiClient'
 import { UsersIcon } from './icons'
+import PhotoLightbox from './PhotoLightbox'
 import type { ComponentType, SVGProps } from 'react'
 
 export default function PhotoUploader({
@@ -24,6 +25,7 @@ export default function PhotoUploader({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [viewingPhoto, setViewingPhoto] = useState(false)
 
   async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -49,13 +51,19 @@ export default function PhotoUploader({
 
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100">
+      <button
+        type="button"
+        onClick={() => displayUrl && setViewingPhoto(true)}
+        disabled={!displayUrl}
+        aria-label={displayUrl ? `View ${label.toLowerCase()}` : undefined}
+        className="flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-slate-100 disabled:cursor-default"
+      >
         {displayUrl ? (
           <img src={displayUrl} alt="" className="h-full w-full object-cover" />
         ) : (
           <PlaceholderIcon className="h-8 w-8 text-slate-400" />
         )}
-      </div>
+      </button>
 
       <div className="flex flex-col gap-1">
         <p className="text-sm font-medium text-slate-700">{isUploading ? 'Uploading…' : verb}</p>
@@ -107,6 +115,10 @@ export default function PhotoUploader({
         className="hidden"
         onChange={handleFileChange}
       />
+
+      {viewingPhoto && displayUrl && (
+        <PhotoLightbox photoUrl={displayUrl} alt={label} onClose={() => setViewingPhoto(false)} />
+      )}
     </div>
   )
 }
