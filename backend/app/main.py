@@ -13,6 +13,7 @@ from app.modules.admins.router import router as admins_router
 from app.modules.advances.router import router as advances_router
 from app.modules.attendance.router import router as attendance_router
 from app.modules.auth.router import router as auth_router
+from app.modules.chat.router import router as chat_router
 from app.modules.deductions.router import router as deductions_router
 from app.modules.expenses.router import router as expenses_router
 from app.modules.labourers.router import router as labourers_router
@@ -60,6 +61,7 @@ def create_app() -> FastAPI:
     app.include_router(payments_router)
     app.include_router(reports_router)
     app.include_router(wall_calculations_router)
+    app.include_router(chat_router)
 
     @app.get("/health")
     async def health() -> dict:

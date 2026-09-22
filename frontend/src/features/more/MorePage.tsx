@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BuildingIcon, CashIcon, ChevronRightIcon, RulerIcon, UsersIcon } from '../../components/icons'
+import { BuildingIcon, CashIcon, ChatIcon, ChevronRightIcon, RulerIcon, UsersIcon } from '../../components/icons'
 import LabourerHistoryView from '../reports/LabourerHistoryView'
 import SiteAttendanceView from '../reports/SiteAttendanceView'
 import WeeklySettlementView from '../reports/WeeklySettlementView'
@@ -37,6 +37,21 @@ export default function MorePage() {
             <span className="block font-semibold text-slate-900">Wall calculator</span>
             <span className="mt-0.5 block text-sm font-normal text-slate-500">
               Measure a compound wall and calculate its cost.
+            </span>
+          </span>
+          <ChevronRightIcon className="h-5 w-5 shrink-0 text-slate-400" />
+        </Link>
+        <Link
+          to="/assistant"
+          className="mt-2 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-sm transition-colors active:bg-slate-50"
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+            <ChatIcon className="h-5 w-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold text-slate-900">Assistant</span>
+            <span className="mt-0.5 block text-sm font-normal text-slate-500">
+              Ask questions about labourers, sites, and payments.
             </span>
           </span>
           <ChevronRightIcon className="h-5 w-5 shrink-0 text-slate-400" />

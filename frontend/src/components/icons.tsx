@@ -142,3 +142,12 @@ export function InboxIcon(props: IconProps) {
     </svg>
   )
 }
+
+export function ChatIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 5.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H9l-4.5 4v-4H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z" />
+      <path d="M8 10h8M8 13h5" />
+    </svg>
+  )
+}

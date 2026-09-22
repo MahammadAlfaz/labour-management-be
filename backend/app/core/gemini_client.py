@@ -50,3 +50,27 @@ async def generate_content_from_image(*, image_bytes: bytes, mime_type: str, pro
         raise GeminiError("AI extraction returned an empty response")
 
     return response.text
+
+
+async def generate_with_tools(
+    *, contents: list[types.Content], config: types.GenerateContentConfig
+) -> types.GenerateContentResponse:
+    """Send a multi-turn conversation (optionally with function-calling tools)
+    to Gemini and return the full response, since callers need to inspect
+    candidate.content.parts for function calls rather than just the text.
+    """
+    client = _get_client()
+    settings = get_settings()
+
+    try:
+        response = await client.aio.models.generate_content(
+            model=settings.gemini_model,
+            contents=contents,
+            config=config,
+        )
+    except GeminiError:
+        raise
+    except Exception as exc:
+        raise GeminiError("AI assistant request failed") from exc
+
+    return response
