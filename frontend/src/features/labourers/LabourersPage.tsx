@@ -2,6 +2,7 @@ import { useState } from 'react'
 import EmptyState from '../../components/EmptyState'
 import { PlusIcon, SearchIcon, UsersIcon } from '../../components/icons'
 import { PrimaryButton } from '../../components/form'
+import PhotoLightbox from '../../components/PhotoLightbox'
 import type { LabourerStatus } from './api'
 import LabourerDetailSheet from './LabourerDetailSheet'
 import LabourerFormSheet from './LabourerFormSheet'
@@ -19,6 +20,7 @@ export default function LabourersPage() {
   const [creating, setCreating] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [viewingPhoto, setViewingPhoto] = useState<{ url: string; name: string } | null>(null)
 
   const { data: labourers, isLoading, isError } = useLabourers({
     status: status === 'all' ? undefined : status,
@@ -76,30 +78,39 @@ export default function LabourersPage() {
       <ul className="grid grid-cols-2 gap-3">
         {labourers?.map((labourer) => (
           <li key={labourer.id}>
-            <button
-              type="button"
-              onClick={() => setSelectedId(labourer.id)}
-              className="relative w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition-colors active:bg-slate-50"
-            >
-              <div className="flex aspect-square items-center justify-center bg-slate-100">
+            <div className="relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <button
+                type="button"
+                onClick={() =>
+                  labourer.photo_url
+                    ? setViewingPhoto({ url: labourer.photo_url, name: labourer.name })
+                    : setSelectedId(labourer.id)
+                }
+                aria-label={labourer.photo_url ? `View ${labourer.name}'s photo` : labourer.name}
+                className="flex aspect-square w-full cursor-pointer items-center justify-center bg-slate-100 transition-colors active:bg-slate-200"
+              >
                 {labourer.photo_url ? (
                   <img src={labourer.photo_url} alt="" className="h-full w-full object-cover" />
                 ) : (
                   <UsersIcon className="h-10 w-10 text-slate-300" />
                 )}
-              </div>
-              <div className="p-2.5">
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedId(labourer.id)}
+                className="block w-full cursor-pointer p-2.5 text-left transition-colors active:bg-slate-50"
+              >
                 <p className="truncate font-semibold text-slate-900">{labourer.name}</p>
                 <p className="truncate text-xs text-slate-500">
                   {labourer.work_category || 'General'}
                 </p>
-              </div>
+              </button>
               {labourer.status === 'inactive' && (
-                <span className="absolute top-2 right-2 rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-white">
+                <span className="pointer-events-none absolute top-2 right-2 rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-white">
                   Inactive
                 </span>
               )}
-            </button>
+            </div>
           </li>
         ))}
       </ul>
@@ -128,6 +139,13 @@ export default function LabourersPage() {
           labourer={selected}
           onClose={() => setSelectedId(null)}
           onEdit={() => setEditingId(selected.id)}
+        />
+      )}
+      {viewingPhoto && (
+        <PhotoLightbox
+          photoUrl={viewingPhoto.url}
+          alt={viewingPhoto.name}
+          onClose={() => setViewingPhoto(null)}
         />
       )}
     </div>
