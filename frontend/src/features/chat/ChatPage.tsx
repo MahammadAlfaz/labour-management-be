@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { PrimaryButton, TextArea } from '../../components/form'
 import { ApiError } from '../../lib/apiClient'
 import type { ChatMessage } from './api'
@@ -17,13 +18,28 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null)
   const sendMutation = useSendChatMessage()
   const listRef = useRef<HTMLDivElement>(null)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const autoSentRef = useRef(false)
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, sendMutation.isPending])
 
-  async function handleSend() {
-    const message = draft.trim()
+  // Runs once on mount only -- intentionally ignores changes to location/navigate/messages,
+  // since this is purely about consuming a one-time message passed in from QuickAskSheet.
+  useEffect(() => {
+    const initialMessage = (location.state as { initialMessage?: string } | null)?.initialMessage
+    if (!initialMessage || autoSentRef.current) return
+    autoSentRef.current = true
+    // Clear the navigation state so a refresh or back-navigation doesn't resend it.
+    navigate(location.pathname, { replace: true, state: null })
+    sendMessage(initialMessage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function sendMessage(text: string) {
+    const message = text.trim()
     if (!message || sendMutation.isPending) return
 
     setError(null)
@@ -37,6 +53,10 @@ export default function ChatPage() {
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not reach the assistant')
     }
+  }
+
+  async function handleSend() {
+    await sendMessage(draft)
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {

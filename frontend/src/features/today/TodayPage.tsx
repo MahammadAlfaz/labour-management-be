@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { ChatIcon } from '../../components/icons'
 import EmptyState from '../../components/EmptyState'
 import { useSites } from '../sites/useSites'
+import QuickAskSheet from './QuickAskSheet'
 import SiteCrewBoard from './SiteCrewBoard'
 import SiteGrid from './SiteGrid'
 
@@ -11,6 +13,7 @@ function todayIso() {
 export default function TodayPage() {
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null)
   const [workDate, setWorkDate] = useState(todayIso())
+  const [showQuickAsk, setShowQuickAsk] = useState(false)
 
   const { data: sites, isLoading: sitesLoading } = useSites({ status: 'active' })
   const selectedSite = sites?.find((s) => s.id === selectedSiteId) ?? null
@@ -40,6 +43,17 @@ export default function TodayPage() {
       {selectedSite && (
         <SiteCrewBoard site={selectedSite} workDate={workDate} onBack={() => setSelectedSiteId(null)} />
       )}
+
+      <button
+        type="button"
+        onClick={() => setShowQuickAsk(true)}
+        aria-label="Ask the assistant"
+        className="fixed right-4 bottom-24 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-brand-500 text-white shadow-lg transition-colors active:bg-brand-600"
+      >
+        <ChatIcon className="h-6 w-6" />
+      </button>
+
+      {showQuickAsk && <QuickAskSheet onClose={() => setShowQuickAsk(false)} />}
     </div>
   )
 }
