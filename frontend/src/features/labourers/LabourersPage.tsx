@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import Avatar from '../../components/Avatar'
 import EmptyState from '../../components/EmptyState'
-import { ChevronRightIcon, PlusIcon, SearchIcon } from '../../components/icons'
+import { PlusIcon, SearchIcon, UsersIcon } from '../../components/icons'
 import { PrimaryButton } from '../../components/form'
 import type { LabourerStatus } from './api'
 import LabourerDetailSheet from './LabourerDetailSheet'
@@ -74,32 +73,32 @@ export default function LabourersPage() {
         />
       )}
 
-      <ul className="flex flex-col gap-2">
+      <ul className="grid grid-cols-2 gap-3">
         {labourers?.map((labourer) => (
           <li key={labourer.id}>
             <button
               type="button"
               onClick={() => setSelectedId(labourer.id)}
-              className="flex w-full cursor-pointer items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-colors active:bg-slate-50"
+              className="relative w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition-colors active:bg-slate-50"
             >
-              <div className="flex min-w-0 items-center gap-3">
-                <Avatar photoUrl={labourer.photo_url} name={labourer.name} />
-                <div className="min-w-0">
-                  <p className="truncate font-semibold text-slate-900">{labourer.name}</p>
-                  <p className="truncate text-sm text-slate-500">
-                    {labourer.work_category || 'General'}
-                    {labourer.phone ? ` · ${labourer.phone}` : ''}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {labourer.status === 'inactive' && (
-                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">
-                    Inactive
-                  </span>
+              <div className="flex aspect-square items-center justify-center bg-slate-100">
+                {labourer.photo_url ? (
+                  <img src={labourer.photo_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <UsersIcon className="h-10 w-10 text-slate-300" />
                 )}
-                <ChevronRightIcon className="h-5 w-5 text-slate-400" />
               </div>
+              <div className="p-2.5">
+                <p className="truncate font-semibold text-slate-900">{labourer.name}</p>
+                <p className="truncate text-xs text-slate-500">
+                  {labourer.work_category || 'General'}
+                </p>
+              </div>
+              {labourer.status === 'inactive' && (
+                <span className="absolute top-2 right-2 rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-white">
+                  Inactive
+                </span>
+              )}
             </button>
           </li>
         ))}
