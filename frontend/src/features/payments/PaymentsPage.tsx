@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import Avatar from '../../components/Avatar'
 import { PrimaryButton, SecondaryButton, Select, TextInput } from '../../components/form'
-import { ChevronRightIcon, SearchIcon } from '../../components/icons'
+import { SearchIcon, UsersIcon } from '../../components/icons'
 import { ApiError } from '../../lib/apiClient'
 import { useLabourers } from '../labourers/useLabourers'
 import AdvanceFormSheet from './AdvanceFormSheet'
@@ -102,22 +101,25 @@ export default function PaymentsPage() {
               className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3 pl-10 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
             />
           </div>
-          <ul className="flex flex-col gap-2">
+          <ul className="grid grid-cols-2 gap-3">
             {labourers?.map((labourer) => (
               <li key={labourer.id}>
                 <button
                   type="button"
                   onClick={() => setLabourerId(labourer.id)}
-                  className="flex w-full cursor-pointer items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-colors active:bg-slate-50"
+                  className="w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition-colors active:bg-slate-50"
                 >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <Avatar photoUrl={labourer.photo_url} name={labourer.name} />
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold text-slate-900">{labourer.name}</p>
-                      <p className="truncate text-sm text-slate-500">{labourer.work_category || 'General'}{labourer.phone ? ` · ${labourer.phone}` : ''}</p>
-                    </div>
+                  <div className="flex aspect-square items-center justify-center bg-slate-100">
+                    {labourer.photo_url ? (
+                      <img src={labourer.photo_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <UsersIcon className="h-10 w-10 text-slate-300" />
+                    )}
                   </div>
-                  <ChevronRightIcon className="h-5 w-5 shrink-0 text-slate-400" />
+                  <div className="p-2.5">
+                    <p className="truncate font-semibold text-slate-900">{labourer.name}</p>
+                    <p className="truncate text-xs text-slate-500">{labourer.work_category || 'General'}</p>
+                  </div>
                 </button>
               </li>
             ))}
