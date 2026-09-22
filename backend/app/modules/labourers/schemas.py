@@ -17,6 +17,7 @@ class LabourerStatus(str, Enum):
 class LabourerCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     phone: str | None = Field(default=None, max_length=20)
+    upi_id: str | None = Field(default=None, max_length=100)
     work_category: str | None = Field(default=None, max_length=100)
     payment_frequency: PaymentFrequency = PaymentFrequency.DAILY
 
@@ -24,6 +25,7 @@ class LabourerCreate(BaseModel):
 class LabourerUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=200)
     phone: str | None = Field(default=None, max_length=20)
+    upi_id: str | None = Field(default=None, max_length=100)
     work_category: str | None = Field(default=None, max_length=100)
     payment_frequency: PaymentFrequency | None = None
 
@@ -32,6 +34,7 @@ class LabourerOut(BaseModel):
     id: str
     name: str
     phone: str | None
+    upi_id: str | None = None
     status: LabourerStatus
     work_category: str | None
     payment_frequency: PaymentFrequency

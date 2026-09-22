@@ -11,7 +11,8 @@ export function buildUpiPayLink({
   amount,
   note,
 }: {
-  /** A UPI VPA (e.g. "name@bank") or a plain phone number as a best-effort fallback. */
+  /** A UPI VPA (e.g. "9876543210@ybl" or "name@oksbi") -- the `pa` param requires a real
+   *  VPA, not a bare phone number; most UPI apps won't resolve a raw number here. */
   payeeIdentifier: string
   payeeName: string
   amount?: string

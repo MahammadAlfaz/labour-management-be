@@ -11,6 +11,7 @@ def _to_out(doc: dict) -> LabourerOut:
         id=str(doc["_id"]),
         name=doc["name"],
         phone=doc.get("phone"),
+        upi_id=doc.get("upi_id"),
         status=doc["status"],
         work_category=doc.get("work_category"),
         payment_frequency=doc["payment_frequency"],
@@ -31,6 +32,7 @@ class LabourerRepository:
         *,
         name: str,
         phone: str | None,
+        upi_id: str | None,
         work_category: str | None,
         payment_frequency: str,
         admin_id: str,
@@ -39,6 +41,7 @@ class LabourerRepository:
         doc = {
             "name": name,
             "phone": phone,
+            "upi_id": upi_id,
             "status": "active",
             "work_category": work_category,
             "payment_frequency": payment_frequency,

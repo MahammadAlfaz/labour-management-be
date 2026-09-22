@@ -14,11 +14,29 @@ def service(mongo_db):
 
 
 async def test_create_labourer_defaults_to_active(service):
-    labourer = await service.create(LabourerCreate(name="Ravi Kumar", phone="9999999999"), "admin-1")
+    labourer = await service.create(
+        LabourerCreate(name="Ravi Kumar", phone="9999999999", upi_id="ravi@upi"), "admin-1"
+    )
 
     assert labourer.status == "active"
     assert labourer.name == "Ravi Kumar"
     assert labourer.created_by == "admin-1"
+    assert labourer.phone == "9999999999"
+    assert labourer.upi_id == "ravi@upi"
+
+
+async def test_create_labourer_without_upi_id_leaves_it_none(service):
+    labourer = await service.create(LabourerCreate(name="No UPI"), "admin-1")
+
+    assert labourer.upi_id is None
+
+
+async def test_update_sets_upi_id(service):
+    labourer = await service.create(LabourerCreate(name="Test"), "admin-1")
+
+    updated = await service.update(labourer.id, LabourerUpdate(upi_id="test@ybl"), "admin-1")
+
+    assert updated.upi_id == "test@ybl"
 
 
 async def test_deactivate_then_activate_round_trip(service):

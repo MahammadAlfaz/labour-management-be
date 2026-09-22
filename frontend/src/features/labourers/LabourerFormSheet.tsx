@@ -14,6 +14,7 @@ export default function LabourerFormSheet({ labourer, onClose }: LabourerFormShe
   const isEdit = Boolean(labourer)
   const [name, setName] = useState(labourer?.name ?? '')
   const [phone, setPhone] = useState(labourer?.phone ?? '')
+  const [upiId, setUpiId] = useState(labourer?.upi_id ?? '')
   const [workCategory, setWorkCategory] = useState(labourer?.work_category ?? '')
   const [paymentFrequency, setPaymentFrequency] = useState<PaymentFrequency>(
     labourer?.payment_frequency ?? 'daily'
@@ -38,6 +39,7 @@ export default function LabourerFormSheet({ labourer, onClose }: LabourerFormShe
           input: {
             name: name.trim(),
             phone: phone.trim() || null,
+            upi_id: upiId.trim() || null,
             work_category: workCategory.trim() || null,
             payment_frequency: paymentFrequency,
           },
@@ -46,6 +48,7 @@ export default function LabourerFormSheet({ labourer, onClose }: LabourerFormShe
         await createMutation.mutateAsync({
           name: name.trim(),
           phone: phone.trim() || undefined,
+          upi_id: upiId.trim() || undefined,
           work_category: workCategory.trim() || undefined,
           payment_frequency: paymentFrequency,
         })
@@ -76,6 +79,15 @@ export default function LabourerFormSheet({ labourer, onClose }: LabourerFormShe
             value={phone ?? ''}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="10-digit number"
+          />
+        </Field>
+
+        <Field label="UPI ID (optional)" htmlFor="labourer-upi-id">
+          <TextInput
+            id="labourer-upi-id"
+            value={upiId ?? ''}
+            onChange={(e) => setUpiId(e.target.value)}
+            placeholder="e.g. 9876543210@ybl"
           />
         </Field>
 

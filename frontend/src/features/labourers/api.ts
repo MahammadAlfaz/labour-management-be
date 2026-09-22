@@ -7,6 +7,7 @@ export interface Labourer {
   id: string
   name: string
   phone: string | null
+  upi_id: string | null
   status: LabourerStatus
   work_category: string | null
   payment_frequency: PaymentFrequency
@@ -20,6 +21,7 @@ export interface Labourer {
 export interface LabourerInput {
   name: string
   phone?: string | null
+  upi_id?: string | null
   work_category?: string | null
   payment_frequency?: PaymentFrequency
 }

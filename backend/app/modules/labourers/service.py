@@ -17,6 +17,7 @@ class LabourerService:
         labourer = await self._repo.create(
             name=data["name"].strip(),
             phone=data.get("phone"),
+            upi_id=data.get("upi_id"),
             work_category=data.get("work_category"),
             payment_frequency=data["payment_frequency"],
             admin_id=admin_id,

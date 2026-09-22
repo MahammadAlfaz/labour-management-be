@@ -57,10 +57,10 @@ export default function PaymentsPage() {
   const createPayment = useCreatePayment(labourerId ?? '')
 
   function handlePayViaUpi() {
-    if (!selectedLabourer?.phone) return
+    if (!selectedLabourer?.upi_id) return
     const amount = paidAmount || preview?.suggested_amount
     const link = buildUpiPayLink({
-      payeeIdentifier: selectedLabourer.phone.replace(/\D/g, ''),
+      payeeIdentifier: selectedLabourer.upi_id,
       payeeName: selectedLabourer.name,
       amount,
       note: `Wages for ${selectedLabourer.name}`,
@@ -246,19 +246,19 @@ export default function PaymentsPage() {
                 )}
               </div>
             </label>
-            {selectedLabourer.phone ? (
+            {selectedLabourer.upi_id ? (
               <div className="flex flex-col gap-1">
                 <SecondaryButton onClick={handlePayViaUpi} className="w-full">
                   Pay via UPI
                 </SecondaryButton>
                 <p className="text-xs text-slate-500">
-                  Opens your UPI app with the amount and number pre-filled -- you still send it
-                  yourself, then record the payment below.
+                  Opens your UPI app with the amount pre-filled -- you still send it yourself,
+                  then record the payment below.
                 </p>
               </div>
             ) : (
               <p className="text-xs text-slate-500">
-                Add a phone number for {selectedLabourer.name} to pay via UPI.
+                Add a UPI ID for {selectedLabourer.name} (edit their profile) to pay via UPI.
               </p>
             )}
             {preview && paidAmount && Number(paidAmount) !== Number(preview.suggested_amount) && (
