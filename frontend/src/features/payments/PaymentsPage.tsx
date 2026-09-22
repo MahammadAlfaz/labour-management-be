@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { PrimaryButton, SecondaryButton, Select, TextInput } from '../../components/form'
 import { SearchIcon, UsersIcon } from '../../components/icons'
 import { ApiError } from '../../lib/apiClient'
+import { buildUpiPayLink } from '../../lib/upi'
 import { useLabourers } from '../labourers/useLabourers'
 import AdvanceFormSheet from './AdvanceFormSheet'
 import type { PeriodType } from './api'
@@ -54,6 +55,18 @@ export default function PaymentsPage() {
   })
   const { data: history } = usePaymentHistory(labourerId)
   const createPayment = useCreatePayment(labourerId ?? '')
+
+  function handlePayViaUpi() {
+    if (!selectedLabourer?.phone) return
+    const amount = paidAmount || preview?.suggested_amount
+    const link = buildUpiPayLink({
+      payeeIdentifier: selectedLabourer.phone.replace(/\D/g, ''),
+      payeeName: selectedLabourer.name,
+      amount,
+      note: `Wages for ${selectedLabourer.name}`,
+    })
+    window.location.href = link
+  }
 
   async function handleSubmit() {
     if (!labourerId || !preview) return
@@ -233,6 +246,21 @@ export default function PaymentsPage() {
                 )}
               </div>
             </label>
+            {selectedLabourer.phone ? (
+              <div className="flex flex-col gap-1">
+                <SecondaryButton onClick={handlePayViaUpi} className="w-full">
+                  Pay via UPI
+                </SecondaryButton>
+                <p className="text-xs text-slate-500">
+                  Opens your UPI app with the amount and number pre-filled -- you still send it
+                  yourself, then record the payment below.
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500">
+                Add a phone number for {selectedLabourer.name} to pay via UPI.
+              </p>
+            )}
             {preview && paidAmount && Number(paidAmount) !== Number(preview.suggested_amount) && (
               <label className="text-sm">
                 <span className="mb-1 block font-medium text-slate-700">
