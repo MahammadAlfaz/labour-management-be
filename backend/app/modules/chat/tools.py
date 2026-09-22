@@ -263,9 +263,14 @@ GET_SITE_ATTENDANCE_DECLARATION = types.FunctionDeclaration(
 GET_WEEKLY_SETTLEMENT_DECLARATION = types.FunctionDeclaration(
     name="get_weekly_settlement",
     description=(
-        "Get the suggested settlement amount for every active labourer over a "
-        "period, and who still has unpaid earnings. No id needed -- covers all "
-        "active labourers at once. Good for 'who is due this week' questions."
+        "Get the suggested settlement amount for EVERY active labourer over a "
+        "period in ONE call, and who still has unpaid earnings. No id needed. "
+        "ALWAYS use this -- never list_labourers + get_payment_preview in a loop "
+        "-- for any question about what is owed 'to everyone', 'to every labourer', "
+        "'to all of them', or similar bulk/list questions, even if the user did not "
+        "name a specific period; if no period was given, default to today as both "
+        "period_start and period_end. Calling get_payment_preview once per labourer "
+        "instead is far slower and will likely fail partway through."
     ),
     parameters=types.Schema(
         type=types.Type.OBJECT,
@@ -280,10 +285,13 @@ GET_WEEKLY_SETTLEMENT_DECLARATION = types.FunctionDeclaration(
 GET_PAYMENT_PREVIEW_DECLARATION = types.FunctionDeclaration(
     name="get_payment_preview",
     description=(
-        "Preview what a labourer would be paid if settled right now for a period: "
-        "wages, travel expenses, unsettled advances/deductions/adjustments, prior "
-        "balance, and the suggested payout amount. This does NOT create a payment "
-        "-- it is a read-only calculation, good for 'how much do we owe X' questions."
+        "Preview what ONE named labourer would be paid if settled right now for a "
+        "period: wages, travel expenses, unsettled advances/deductions/adjustments, "
+        "prior balance, and the suggested payout amount. This does NOT create a "
+        "payment -- it is a read-only calculation, good for 'how much do we owe X' "
+        "questions about a single specific person. Do NOT call this once per "
+        "labourer to answer a question about everyone -- use get_weekly_settlement "
+        "instead for that, it covers all active labourers in a single call."
     )
     + _RESOLVE_NAME_NOTE,
     parameters=types.Schema(
