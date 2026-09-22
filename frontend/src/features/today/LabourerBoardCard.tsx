@@ -2,7 +2,6 @@ import { useState } from 'react'
 import Avatar from '../../components/Avatar'
 import { CloseIcon } from '../../components/icons'
 import { PrimaryButton } from '../../components/form'
-import PhotoLightbox from '../../components/PhotoLightbox'
 import { ApiError } from '../../lib/apiClient'
 import type { AttendanceStatus, BoardEntry } from './api'
 import { useMarkAttendance, useUnassignLabourer } from './useBoard'
@@ -37,7 +36,6 @@ export default function LabourerBoardCard({
   const [amount, setAmount] = useState(record.status === 'HALF_DAY' ? record.amount : '')
   const [error, setError] = useState<string | null>(null)
   const [showDetail, setShowDetail] = useState(false)
-  const [showPhoto, setShowPhoto] = useState(false)
 
   const markMutation = useMarkAttendance(siteId, workDate)
   const unassignMutation = useUnassignLabourer(siteId, workDate)
@@ -94,15 +92,7 @@ export default function LabourerBoardCard({
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={() => entry.labourer_photo_url && setShowPhoto(true)}
-            disabled={!entry.labourer_photo_url}
-            aria-label={entry.labourer_photo_url ? `View ${entry.labourer_name}'s photo` : undefined}
-            className="shrink-0 cursor-pointer rounded-full disabled:cursor-default"
-          >
-            <Avatar photoUrl={entry.labourer_photo_url} name={entry.labourer_name} size="sm" />
-          </button>
+          <Avatar photoUrl={entry.labourer_photo_url} name={entry.labourer_name} size="sm" />
           <p className="truncate font-semibold text-slate-900">{entry.labourer_name}</p>
           {isPending && (
             <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
@@ -180,14 +170,6 @@ export default function LabourerBoardCard({
           recordId={record.id}
           labourerName={entry.labourer_name}
           onClose={() => setShowDetail(false)}
-        />
-      )}
-
-      {showPhoto && entry.labourer_photo_url && (
-        <PhotoLightbox
-          photoUrl={entry.labourer_photo_url}
-          alt={entry.labourer_name}
-          onClose={() => setShowPhoto(false)}
         />
       )}
     </div>

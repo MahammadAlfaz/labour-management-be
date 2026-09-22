@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { PrimaryButton, SecondaryButton, Select, TextInput } from '../../components/form'
 import { SearchIcon, UsersIcon } from '../../components/icons'
-import PhotoLightbox from '../../components/PhotoLightbox'
 import { ApiError } from '../../lib/apiClient'
 import { useLabourers } from '../labourers/useLabourers'
 import AdvanceFormSheet from './AdvanceFormSheet'
@@ -40,7 +39,6 @@ export default function PaymentsPage() {
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID())
   const [showAdvanceForm, setShowAdvanceForm] = useState(false)
   const [showDeductionForm, setShowDeductionForm] = useState(false)
-  const [viewingPhoto, setViewingPhoto] = useState<{ url: string; name: string } | null>(null)
 
   const { data: labourers } = useLabourers({ status: 'active', search: search.trim() || undefined })
   const selectedLabourer = labourers?.find((l) => l.id === labourerId) ?? null
@@ -106,32 +104,23 @@ export default function PaymentsPage() {
           <ul className="grid grid-cols-2 gap-3">
             {labourers?.map((labourer) => (
               <li key={labourer.id}>
-                <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      labourer.photo_url
-                        ? setViewingPhoto({ url: labourer.photo_url, name: labourer.name })
-                        : setLabourerId(labourer.id)
-                    }
-                    aria-label={labourer.photo_url ? `View ${labourer.name}'s photo` : labourer.name}
-                    className="flex aspect-square w-full cursor-pointer items-center justify-center bg-slate-100 transition-colors active:bg-slate-200"
-                  >
+                <button
+                  type="button"
+                  onClick={() => setLabourerId(labourer.id)}
+                  className="w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition-colors active:bg-slate-50"
+                >
+                  <div className="flex aspect-square items-center justify-center bg-slate-100">
                     {labourer.photo_url ? (
                       <img src={labourer.photo_url} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <UsersIcon className="h-10 w-10 text-slate-300" />
                     )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLabourerId(labourer.id)}
-                    className="block w-full cursor-pointer p-2.5 text-left transition-colors active:bg-slate-50"
-                  >
+                  </div>
+                  <div className="p-2.5">
                     <p className="truncate font-semibold text-slate-900">{labourer.name}</p>
                     <p className="truncate text-xs text-slate-500">{labourer.work_category || 'General'}</p>
-                  </button>
-                </div>
+                  </div>
+                </button>
               </li>
             ))}
           </ul>
@@ -295,13 +284,6 @@ export default function PaymentsPage() {
       )}
       {labourerId && showDeductionForm && (
         <DeductionFormSheet labourerId={labourerId} onClose={() => setShowDeductionForm(false)} />
-      )}
-      {viewingPhoto && (
-        <PhotoLightbox
-          photoUrl={viewingPhoto.url}
-          alt={viewingPhoto.name}
-          onClose={() => setViewingPhoto(null)}
-        />
       )}
     </div>
   )
