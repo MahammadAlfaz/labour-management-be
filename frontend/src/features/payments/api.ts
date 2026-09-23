@@ -1,6 +1,6 @@
 import { apiFetch } from '../../lib/apiClient'
 
-export type PeriodType = 'daily' | 'weekly'
+export type PeriodType = 'daily' | 'weekly' | 'monthly'
 export type PaymentStatus = 'paid' | 'partial' | 'overpaid'
 
 export interface PaymentSnapshot {

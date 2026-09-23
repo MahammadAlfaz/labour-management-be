@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import EmptyState from '../../components/EmptyState'
 import { SearchIcon } from '../../components/icons'
+import { toLocalIsoDate, todayIso } from '../../lib/date'
 import { useLabourers } from '../labourers/useLabourers'
 import DateRangeFields from './DateRangeFields'
 import { labourerHistoryExportUrl } from './api'
@@ -9,11 +10,7 @@ import { useLabourerHistory } from './useReports'
 function monthAgoIso() {
   const d = new Date()
   d.setDate(d.getDate() - 30)
-  return d.toISOString().slice(0, 10)
-}
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
+  return toLocalIsoDate(d)
 }
 
 export default function LabourerHistoryView() {

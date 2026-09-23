@@ -2,11 +2,8 @@ import { useState } from 'react'
 import BottomSheet from '../../components/BottomSheet'
 import { Field, PrimaryButton, TextInput } from '../../components/form'
 import { ApiError } from '../../lib/apiClient'
+import { todayIso } from '../../lib/date'
 import { useCreateAdvance } from './usePayments'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 export default function AdvanceFormSheet({
   labourerId,

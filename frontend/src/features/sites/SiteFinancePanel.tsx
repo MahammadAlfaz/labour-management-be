@@ -1,16 +1,13 @@
 import { useState } from 'react'
 import { Field, PrimaryButton, TextInput } from '../../components/form'
 import { ApiError } from '../../lib/apiClient'
+import { todayIso } from '../../lib/date'
 import {
   useClientReceipts,
   useCreateClientReceipt,
   useSiteFinancialSummary,
   useSiteExpenses,
 } from './useSites'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 function money(value: string | null | undefined) {
   return `₹${Number(value ?? 0).toLocaleString('en-IN', {

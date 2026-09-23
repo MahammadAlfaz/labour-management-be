@@ -10,6 +10,7 @@ from app.modules.adjustments.schemas import AdjustmentOut
 class PeriodType(str, Enum):
     DAILY = "daily"
     WEEKLY = "weekly"
+    MONTHLY = "monthly"
 
 
 class PaymentStatus(str, Enum):

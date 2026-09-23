@@ -78,6 +78,22 @@ async def test_preview_sums_unpaid_earnings(payment_service, attendance_service,
     assert len(preview.unpaid_work_record_ids) == 1
 
 
+async def test_preview_sums_unpaid_earnings_over_a_full_month(
+    payment_service, attendance_service, labourer_id, site_id
+):
+    await _mark_full_day(attendance_service, labourer_id, site_id, date(2026, 2, 1))
+    await _mark_full_day(attendance_service, labourer_id, site_id, date(2026, 2, 15))
+    await _mark_full_day(attendance_service, labourer_id, site_id, date(2026, 2, 28))
+
+    preview = await payment_service.preview(
+        labourer_id, PeriodType.MONTHLY, date(2026, 2, 1), date(2026, 2, 28)
+    )
+
+    assert preview.earnings == 2400
+    assert preview.suggested_amount == 2400
+    assert len(preview.unpaid_work_record_ids) == 3
+
+
 async def test_create_payment_marks_records_paid_and_excludes_from_next_preview(
     payment_service, attendance_service, labourer_id, site_id
 ):

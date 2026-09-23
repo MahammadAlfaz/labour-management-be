@@ -1,14 +1,11 @@
 import { useState } from 'react'
 import { ChatIcon } from '../../components/icons'
 import EmptyState from '../../components/EmptyState'
+import { todayIso } from '../../lib/date'
 import { useSites } from '../sites/useSites'
 import QuickAskSheet from './QuickAskSheet'
 import SiteCrewBoard from './SiteCrewBoard'
 import SiteGrid from './SiteGrid'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 export default function TodayPage() {
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null)

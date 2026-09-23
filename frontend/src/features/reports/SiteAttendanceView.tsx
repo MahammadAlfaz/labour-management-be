@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import EmptyState from '../../components/EmptyState'
+import { toLocalIsoDate, todayIso } from '../../lib/date'
 import { useSites } from '../sites/useSites'
 import DateRangeFields from './DateRangeFields'
 import { siteAttendanceExportUrl } from './api'
@@ -8,11 +9,7 @@ import { useSiteAttendanceReport } from './useReports'
 function monthAgoIso() {
   const d = new Date()
   d.setDate(d.getDate() - 30)
-  return d.toISOString().slice(0, 10)
-}
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
+  return toLocalIsoDate(d)
 }
 
 export default function SiteAttendanceView() {

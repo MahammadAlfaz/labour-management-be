@@ -301,7 +301,7 @@ GET_PAYMENT_PREVIEW_DECLARATION = types.FunctionDeclaration(
             "period_type": types.Schema(
                 type=types.Type.STRING,
                 description="Settlement period cadence.",
-                enum=["daily", "weekly"],
+                enum=["daily", "weekly", "monthly"],
             ),
             "period_start": types.Schema(type=types.Type.STRING, description="YYYY-MM-DD."),
             "period_end": types.Schema(type=types.Type.STRING, description="YYYY-MM-DD, inclusive."),

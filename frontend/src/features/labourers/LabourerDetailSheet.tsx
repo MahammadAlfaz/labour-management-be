@@ -3,6 +3,7 @@ import BottomSheet from '../../components/BottomSheet'
 import { DangerButton, Field, PrimaryButton, SecondaryButton, TextInput } from '../../components/form'
 import PhotoUploader from '../../components/PhotoUploader'
 import { ApiError } from '../../lib/apiClient'
+import { todayIso } from '../../lib/date'
 import type { Labourer } from './api'
 import {
   useAddWage,
@@ -11,10 +12,6 @@ import {
   useUploadLabourerPhoto,
   useWageHistory,
 } from './useLabourers'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 export default function LabourerDetailSheet({
   labourer,

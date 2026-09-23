@@ -2,16 +2,14 @@ import { useState } from 'react'
 import { PrimaryButton, SecondaryButton, Select, TextInput } from '../../components/form'
 import { SearchIcon, UsersIcon } from '../../components/icons'
 import { ApiError } from '../../lib/apiClient'
+import { toLocalIsoDate, todayIso } from '../../lib/date'
 import { buildUpiPayLink } from '../../lib/upi'
 import { useLabourers } from '../labourers/useLabourers'
+import { useLabourerHistory } from '../reports/useReports'
 import AdvanceFormSheet from './AdvanceFormSheet'
 import type { PeriodType } from './api'
 import DeductionFormSheet from './DeductionFormSheet'
 import { useCreatePayment, usePaymentHistory, usePaymentPreview } from './usePayments'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 /** Sunday-to-Saturday week containing the given date (see plan: Sat is payday). */
 function weekRange(dateStr: string): { start: string; end: string } {
@@ -20,7 +18,34 @@ function weekRange(dateStr: string): { start: string; end: string } {
   start.setDate(d.getDate() - d.getDay())
   const end = new Date(start)
   end.setDate(start.getDate() + 6)
-  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) }
+  return { start: toLocalIsoDate(start), end: toLocalIsoDate(end) }
+}
+
+/** 1st to the last day of the month containing the given date. */
+function monthRange(dateStr: string): { start: string; end: string } {
+  const d = new Date(`${dateStr}T00:00:00`)
+  const start = new Date(d.getFullYear(), d.getMonth(), 1)
+  const end = new Date(d.getFullYear(), d.getMonth() + 1, 0)
+  return { start: toLocalIsoDate(start), end: toLocalIsoDate(end) }
+}
+
+function eachDayOf(startIso: string, endIso: string): string[] {
+  const days: string[] = []
+  const cursor = new Date(`${startIso}T00:00:00`)
+  const end = new Date(`${endIso}T00:00:00`)
+  while (cursor <= end) {
+    days.push(toLocalIsoDate(cursor))
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  return days
+}
+
+function formatDayLabel(iso: string): string {
+  return new Date(`${iso}T00:00:00`).toLocaleDateString('en-IN', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+  })
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -45,7 +70,11 @@ export default function PaymentsPage() {
   const selectedLabourer = labourers?.find((l) => l.id === labourerId) ?? null
 
   const period =
-    periodType === 'daily' ? { start: anchorDate, end: anchorDate } : weekRange(anchorDate)
+    periodType === 'daily'
+      ? { start: anchorDate, end: anchorDate }
+      : periodType === 'weekly'
+        ? weekRange(anchorDate)
+        : monthRange(anchorDate)
 
   const { data: preview, isLoading: previewLoading } = usePaymentPreview({
     labourerId,
@@ -55,6 +84,14 @@ export default function PaymentsPage() {
   })
   const { data: history } = usePaymentHistory(labourerId)
   const createPayment = useCreatePayment(labourerId ?? '')
+
+  const { data: periodHistory, isLoading: periodHistoryLoading } = useLabourerHistory(
+    periodType !== 'daily' ? labourerId : null,
+    period.start,
+    period.end
+  )
+  const periodDays = periodType !== 'daily' ? eachDayOf(period.start, period.end) : []
+  const periodRecordsByDate = new Map((periodHistory?.work_records ?? []).map((r) => [r.work_date, r]))
 
   function handlePayViaUpi() {
     if (!selectedLabourer?.upi_id) return
@@ -159,11 +196,16 @@ export default function PaymentsPage() {
               <Select value={periodType} onChange={(e) => setPeriodType(e.target.value as PeriodType)}>
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly (Sun–Sat)</option>
+                <option value="monthly">Monthly (1st–31st)</option>
               </Select>
             </label>
             <label className="flex-1 text-sm">
               <span className="mb-1 block font-medium text-slate-700">
-                {periodType === 'daily' ? 'Date' : 'Any day in the week'}
+                {periodType === 'daily'
+                  ? 'Date'
+                  : periodType === 'weekly'
+                    ? 'Any day in the week'
+                    : 'Any day in the month'}
               </span>
               <TextInput
                 type="date"
@@ -172,10 +214,39 @@ export default function PaymentsPage() {
               />
             </label>
           </div>
-          {periodType === 'weekly' && (
+          {periodType !== 'daily' && (
             <p className="-mt-2 text-xs text-slate-500">
               Settling {period.start} to {period.end}
             </p>
+          )}
+
+          {periodType !== 'daily' && (
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <p className="mb-2 text-sm font-semibold text-slate-900">Day by day</p>
+              {periodHistoryLoading && <p className="text-sm text-slate-500">Loading…</p>}
+              <ul className="flex flex-col divide-y divide-slate-100">
+                {periodDays.map((day) => {
+                  const record = periodRecordsByDate.get(day)
+                  return (
+                    <li key={day} className="flex items-center justify-between gap-3 py-2 text-sm">
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-800">{formatDayLabel(day)}</p>
+                        <p className="truncate text-xs text-slate-500">
+                          {record ? record.site_name : 'Not worked'}
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 font-semibold tabular-nums ${
+                          record && Number(record.amount) > 0 ? 'text-slate-900' : 'text-slate-400'
+                        }`}
+                      >
+                        {record ? `₹${record.amount}` : '—'}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
           )}
 
           {previewLoading && <p className="text-sm text-slate-500">Calculating…</p>}

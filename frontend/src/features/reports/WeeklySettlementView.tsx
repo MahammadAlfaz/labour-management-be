@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import EmptyState from '../../components/EmptyState'
 import { AlertIcon } from '../../components/icons'
+import { toLocalIsoDate } from '../../lib/date'
 import DateRangeFields from './DateRangeFields'
 import { weeklySettlementExportUrl } from './api'
 import { useWeeklySettlementReport } from './useReports'
@@ -12,7 +13,7 @@ function currentWeekRange(): { start: string; end: string } {
   start.setDate(d.getDate() - d.getDay())
   const end = new Date(start)
   end.setDate(start.getDate() + 6)
-  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) }
+  return { start: toLocalIsoDate(start), end: toLocalIsoDate(end) }
 }
 
 export default function WeeklySettlementView() {
