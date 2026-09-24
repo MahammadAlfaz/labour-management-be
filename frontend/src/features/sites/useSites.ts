@@ -1,5 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueries, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  type SiteExpense,
   type SiteInput,
   createClientReceipt,
   createSiteExpense,
@@ -51,6 +52,20 @@ export function useCreateClientReceipt(siteId: string) {
 
 export function useSiteExpenses(siteId: string | null) {
   return useQuery({ queryKey: ['site-expenses', siteId], queryFn: () => listSiteExpenses(siteId as string), enabled: siteId !== null })
+}
+
+/** Fetches every site's expenses in one go, sharing cache/keys with useSiteExpenses. */
+export function useAllSitesExpenses(siteIds: string[]) {
+  const results = useQueries({
+    queries: siteIds.map((siteId) => ({
+      queryKey: ['site-expenses', siteId],
+      queryFn: () => listSiteExpenses(siteId),
+    })),
+  })
+
+  const isLoading = results.some((r) => r.isLoading)
+  const expensesBySite: SiteExpense[][] = results.map((r) => r.data ?? [])
+  return { expensesBySite, isLoading }
 }
 
 export function useCreateSiteExpense(siteId: string) {

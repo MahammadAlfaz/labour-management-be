@@ -6,6 +6,7 @@ import { useSites } from '../sites/useSites'
 import QuickAskSheet from './QuickAskSheet'
 import SiteCrewBoard from './SiteCrewBoard'
 import SiteGrid from './SiteGrid'
+import TodaySummary from './TodaySummary'
 
 export default function TodayPage() {
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null)
@@ -34,7 +35,10 @@ export default function TodayPage() {
       )}
 
       {sites && sites.length > 0 && !selectedSite && (
-        <SiteGrid sites={sites} onSelect={setSelectedSiteId} />
+        <>
+          <TodaySummary sites={sites} workDate={workDate} />
+          <SiteGrid sites={sites} workDate={workDate} onSelect={setSelectedSiteId} />
+        </>
       )}
 
       {selectedSite && (

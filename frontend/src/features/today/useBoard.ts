@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { AttendanceStatus } from './api'
+import { useQueries, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { AttendanceStatus, BoardEntry } from './api'
 import {
   assignLabourer,
   clearAttendance,
@@ -15,6 +15,24 @@ export function useBoard(siteId: string | null, workDate: string) {
     queryFn: () => getBoard(siteId as string, workDate),
     enabled: siteId !== null,
   })
+}
+
+/**
+ * Fetches every site's board for the same date in one go, sharing the same
+ * query keys/cache as useBoard so this never duplicates a request already
+ * made by a SiteGrid card.
+ */
+export function useAllSitesBoards(siteIds: string[], workDate: string) {
+  const results = useQueries({
+    queries: siteIds.map((siteId) => ({
+      queryKey: ['board', siteId, workDate],
+      queryFn: () => getBoard(siteId, workDate),
+    })),
+  })
+
+  const isLoading = results.some((r) => r.isLoading)
+  const boards: BoardEntry[][] = results.map((r) => r.data ?? [])
+  return { boards, isLoading }
 }
 
 export function useAvailableLabourers(workDate: string, search: string, enabled: boolean) {
