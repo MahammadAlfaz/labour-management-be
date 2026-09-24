@@ -47,8 +47,8 @@ async def get_labourer(labourer_id: str) -> dict:
     return (await LabourerService().get(labourer_id)).model_dump(mode="json")
 
 
-async def list_sites(status: str | None = None) -> dict:
-    results = await SiteService().list(status=status)
+async def list_sites(status: str | None = None, search: str | None = None) -> dict:
+    results = await SiteService().list(status=status, search=search)
     page, total, truncated = _truncate(results)
     return {
         "sites": [r.model_dump(mode="json") for r in page],
@@ -166,8 +166,9 @@ GET_LABOURER_DECLARATION = types.FunctionDeclaration(
 LIST_SITES_DECLARATION = types.FunctionDeclaration(
     name="list_sites",
     description=(
-        "List construction sites, optionally filtered by status. Use this to "
-        "resolve a site's name to its id. Results are capped at 50."
+        "List construction sites, optionally filtered by status and/or a "
+        "free-text search on name. Use this to resolve a site's name to its "
+        "id. Results are capped at 50 -- narrow `search` for a specific site."
     ),
     parameters=types.Schema(
         type=types.Type.OBJECT,
@@ -176,6 +177,10 @@ LIST_SITES_DECLARATION = types.FunctionDeclaration(
                 type=types.Type.STRING,
                 description="Filter by site status. Omit to include both.",
                 enum=["active", "closed"],
+            ),
+            "search": types.Schema(
+                type=types.Type.STRING,
+                description="Free-text match against the site name.",
             ),
         },
     ),

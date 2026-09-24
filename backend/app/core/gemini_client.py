@@ -27,8 +27,10 @@ _RETRYABLE_STATUS_CODES = {429, 503}
 # If the configured model (settings.gemini_model) keeps failing -- e.g. a
 # brand-new model hitting a sustained capacity issue on Google's side -- fall
 # through to progressively more established models rather than surfacing an
-# error the admin can do nothing about.
-_FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-2.5-flash"]
+# error the admin can do nothing about. These are ordered as a LAST-RESORT
+# list only: settings.gemini_model should already be whichever model is
+# currently most reliable, so this list is rarely reached in practice.
+_FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-3.1-flash-lite"]
 
 
 def _is_retryable(exc: BaseException) -> bool:

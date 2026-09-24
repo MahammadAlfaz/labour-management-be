@@ -48,8 +48,8 @@ class SiteService:
             raise NotFoundError("Site not found")
         return site
 
-    async def list(self, *, status: str | None) -> list[SiteOut]:
-        return await self._repo.list(status=status)
+    async def list(self, *, status: str | None, search: str | None = None) -> list[SiteOut]:
+        return await self._repo.list(status=status, search=search)
 
     async def update(self, site_id: str, payload: SiteUpdate, admin_id: str) -> SiteOut:
         before = await self.get(site_id)

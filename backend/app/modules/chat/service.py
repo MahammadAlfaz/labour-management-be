@@ -1,3 +1,4 @@
+import inspect
 from datetime import date
 
 from google.genai import types
@@ -32,6 +33,17 @@ def _system_instruction() -> str:
         "question about ALL or EVERY labourer's dues/balance/payment, call "
         "get_weekly_settlement exactly once instead; it already covers everyone."
     )
+
+
+def _drop_unknown_kwargs(handler, kwargs: dict) -> dict:
+    """The model occasionally guesses at a parameter name a tool doesn't
+    actually declare (e.g. assuming every "list" tool supports `search`
+    just because one of them does). Drop anything the function signature
+    doesn't recognize instead of letting it crash the whole turn with a
+    TypeError -- a genuinely missing required argument still raises.
+    """
+    valid_params = inspect.signature(handler).parameters
+    return {k: v for k, v in kwargs.items() if k in valid_params}
 
 
 class ChatService:
@@ -69,7 +81,8 @@ class ChatService:
                     result = {"error": f"Unknown tool: {call.name}"}
                 else:
                     try:
-                        result = await handler(**(call.args or {}))
+                        args = _drop_unknown_kwargs(handler, call.args or {})
+                        result = await handler(**args)
                     except AppError as exc:
                         result = {"error": exc.message}
                     except Exception:

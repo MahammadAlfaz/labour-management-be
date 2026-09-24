@@ -40,6 +40,15 @@ async def test_list_filters_by_status(service):
     assert {site.name for site in active_only} == {"Open Site"}
 
 
+async def test_list_filters_by_partial_case_insensitive_name_search(service):
+    await service.create(SiteCreate(name="Sampath Kumar", location="Kundapura"), "admin-1")
+    await service.create(SiteCreate(name="Siriyara Bavi", location="Siriyara"), "admin-1")
+
+    results = await service.list(status=None, search="sampath")
+
+    assert {site.name for site in results} == {"Sampath Kumar"}
+
+
 async def test_update_persists_optional_dates(service):
     site = await service.create(SiteCreate(name="Tower C", location="Z"), "admin-1")
 

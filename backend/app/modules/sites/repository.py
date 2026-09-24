@@ -92,10 +92,12 @@ class SiteRepository:
         doc = await self._collection.find_one({"_id": ObjectId(site_id)})
         return _to_out(doc) if doc else None
 
-    async def list(self, *, status: str | None = None) -> list[SiteOut]:
+    async def list(self, *, status: str | None = None, search: str | None = None) -> list[SiteOut]:
         query: dict = {}
         if status:
             query["status"] = status
+        if search:
+            query["name"] = {"$regex": search, "$options": "i"}
         cursor = self._collection.find(query).sort("name", 1)
         return [_to_out(doc) async for doc in cursor]
 

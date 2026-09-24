@@ -137,6 +137,32 @@ async def test_unexpected_exception_from_tool_returns_generic_error(monkeypatch)
     assert "boom" not in str(captured_results[0])
 
 
+async def test_unexpected_kwarg_from_model_is_dropped_not_a_crash(monkeypatch):
+    """The model sometimes guesses a parameter name a tool doesn't declare
+    (e.g. assuming every "list" tool takes `search` just because one does).
+    That must not raise a TypeError that looks like a real tool failure."""
+    responses = [
+        _function_call_response(("get_labourer", {"labourer_id": "abc123", "made_up_arg": "x"})),
+        _text_response("Found them."),
+    ]
+    received_kwargs = {}
+
+    async def fake_get_labourer(labourer_id: str) -> dict:
+        received_kwargs["labourer_id"] = labourer_id
+        return {"id": labourer_id}
+
+    async def fake_generate(*, contents, config):
+        return responses.pop(0)
+
+    monkeypatch.setattr(chat_service_module, "generate_with_tools", fake_generate)
+    monkeypatch.setitem(chat_service_module.TOOL_DISPATCH, "get_labourer", fake_get_labourer)
+
+    reply = await ChatService().send_message(message="find abc123", history=[])
+
+    assert reply == "Found them."
+    assert received_kwargs == {"labourer_id": "abc123"}
+
+
 async def test_unknown_tool_name_is_handled_without_crashing(monkeypatch):
     responses = [
         _function_call_response(("not_a_real_tool", {})),

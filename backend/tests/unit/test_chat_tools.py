@@ -81,6 +81,16 @@ async def test_list_sites_returns_serializable_dict(mongo_db, site_id):
     assert result["sites"][0]["id"] == site_id
 
 
+async def test_list_sites_filters_by_search(mongo_db, site_id):
+    result = await tools.list_sites(search="Tool")
+
+    assert result["sites"][0]["id"] == site_id
+
+    result = await tools.list_sites(search="nonexistent")
+
+    assert result["sites"] == []
+
+
 async def test_get_site_returns_profile(mongo_db, site_id):
     result = await tools.get_site(site_id)
 

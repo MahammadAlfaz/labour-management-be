@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     supabase_bucket: str = "labour-management"
 
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-3.1-flash-lite"
+    gemini_model: str = "gemini-2.5-flash"
 
     @property
     def admin_email_list(self) -> list[str]:

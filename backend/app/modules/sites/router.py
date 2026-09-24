@@ -27,9 +27,10 @@ async def create_site(
 @router.get("", response_model=list[SiteOut])
 async def list_sites(
     status: str | None = Query(default=None),
+    search: str | None = Query(default=None),
     _current_admin: AdminOut = Depends(get_current_admin),
 ) -> list[SiteOut]:
-    return await SiteService().list(status=status)
+    return await SiteService().list(status=status, search=search)
 
 
 @router.get("/{site_id}", response_model=SiteOut)
