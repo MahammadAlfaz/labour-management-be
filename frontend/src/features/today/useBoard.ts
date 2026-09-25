@@ -55,6 +55,47 @@ export function useAssignLabourer(siteId: string, workDate: string) {
   })
 }
 
+export interface AssignLabourersFailure {
+  labourerId: string
+  message: string
+}
+
+/**
+ * Assigns several labourers to the same site/date in one action. Fires the
+ * existing single-assign endpoint once per person (in parallel) rather than
+ * needing a new bulk endpoint -- each one still gets the backend's normal
+ * per-record validation and audit logging. Partial failures (e.g. someone
+ * got assigned elsewhere between opening the sheet and confirming) don't
+ * roll back the ones that succeeded.
+ */
+export function useAssignLabourers(siteId: string, workDate: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (labourerIds: string[]) => {
+      const results = await Promise.allSettled(
+        labourerIds.map((labourerId) =>
+          assignLabourer({ labourer_id: labourerId, site_id: siteId, work_date: workDate })
+        )
+      )
+      const failed: AssignLabourersFailure[] = []
+      results.forEach((result, i) => {
+        if (result.status === 'rejected') {
+          const reason = result.reason
+          failed.push({
+            labourerId: labourerIds[i],
+            message: reason instanceof Error ? reason.message : 'Could not assign',
+          })
+        }
+      })
+      return { succeeded: labourerIds.length - failed.length, failed }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['board', siteId, workDate] })
+      queryClient.invalidateQueries({ queryKey: ['available-labourers', workDate] })
+    },
+  })
+}
+
 export function useUnassignLabourer(siteId: string, workDate: string) {
   const queryClient = useQueryClient()
   return useMutation({
